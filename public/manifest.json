@@ -1,0 +1,30 @@
+{
+    "name": "MAHASI.TECH - Platform Lomba Mahasiswa Indonesia",
+    "short_name": "MAHASI.TECH",
+    "description": "Platform kompetisi digital untuk mahasiswa Indonesia. Mahasiswa Berprestasi, Teknologi Terdepan.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0f",
+    "theme_color": "#8b5cf6",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "lang": "id-ID",
+    "dir": "ltr"
+}
