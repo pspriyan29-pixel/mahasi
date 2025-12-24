@@ -256,8 +256,22 @@ export default function RegisterPage() {
                                     <input type="checkbox" id="terms" className="mt-1" required disabled={loading} />
                                     <label htmlFor="terms" className="text-sm text-gray-400">
                                         Saya setuju dengan{' '}
-                                        <a href="#" className="text-purple-400 hover:text-purple-300">
-                                            syarat dan ketentuan
+                                        <a
+                                            href="https://www.termsfeed.com/live/21a0f743-cadf-4f6d-9555-c558d95b0094"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-purple-400 hover:text-purple-300 transition-colors"
+                                        >
+                                            Syarat & Ketentuan
+                                        </a>{' '}
+                                        dan{' '}
+                                        <a
+                                            href="https://www.termsfeed.com/live/11dc13ee-e613-46f4-8fa5-178da379baf9"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-purple-400 hover:text-purple-300 transition-colors"
+                                        >
+                                            Kebijakan Privasi
                                         </a>{' '}
                                         yang berlaku
                                     </label>

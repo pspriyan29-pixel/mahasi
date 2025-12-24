@@ -249,16 +249,39 @@ export default function Footer() {
                     <p className="text-center md:text-left">
                         © {currentYear} Platform Lomba Mahasiswa. By <span className="text-purple-400 font-semibold">Riyan Perdhana Putra</span> | POLITEKNIK KAMPAR
                     </p>
-                    <div className="flex gap-6">
-                        <Link href="/contact" className="hover:text-white transition-colors hover:text-purple-400">
+                    <div className="flex flex-wrap gap-4 sm:gap-6 justify-center md:justify-end">
+                        <a
+                            href="https://www.termsfeed.com/live/11dc13ee-e613-46f4-8fa5-178da379baf9"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-white transition-colors hover:text-purple-400"
+                        >
                             Privacy Policy
-                        </Link>
-                        <Link href="/contact" className="hover:text-white transition-colors hover:text-purple-400">
-                            Terms of Service
-                        </Link>
-                        <Link href="/contact" className="hover:text-white transition-colors hover:text-purple-400">
-                            Cookie Policy
-                        </Link>
+                        </a>
+                        <a
+                            href="https://www.termsfeed.com/live/21a0f743-cadf-4f6d-9555-c558d95b0094"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-white transition-colors hover:text-purple-400"
+                        >
+                            Terms & Conditions
+                        </a>
+                        <a
+                            href="https://www.termsfeed.com/live/6edc5331-3696-4662-a9d5-23086edb1e3f"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-white transition-colors hover:text-purple-400"
+                        >
+                            Cookies Policy
+                        </a>
+                        <a
+                            href="https://www.termsfeed.com/live/be9903d8-3e95-41c6-a87a-b0080f8b57fd"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-white transition-colors hover:text-purple-400"
+                        >
+                            Disclaimer
+                        </a>
                     </div>
                 </div>
             </div>
