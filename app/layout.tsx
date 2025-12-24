@@ -75,6 +75,7 @@ export default function RootLayout({
     return (
         <html lang="id">
             <head>
+                <meta name="google-adsense-account" content="ca-pub-6133261181364771" />
                 <StructuredData />
             </head>
             <body className="antialiased">

@@ -43,38 +43,38 @@ const features = [
 
 export default function Features() {
     return (
-        <section className="py-20 relative">
+        <section className="py-12 sm:py-16 md:py-20 relative">
             <div className="container-custom">
                 {/* Section Header */}
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                <div className="text-center mb-12 sm:mb-16 px-4">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
                         Kenapa Pilih <span className="gradient-text">Platform Kami?</span>
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                    <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
                         Platform kompetisi mahasiswa terlengkap dengan fitur-fitur unggulan
                     </p>
                 </div>
 
                 {/* Features Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {features.map((feature, index) => {
                         const Icon = feature.icon;
                         return (
                             <div
                                 key={index}
-                                className="glass-strong rounded-2xl p-8 hover:scale-105 transition-all duration-300 group animate-slide-up"
+                                className="glass-strong rounded-2xl p-6 sm:p-8 hover:scale-105 transition-all duration-300 group animate-slide-up"
                                 style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 {/* Icon */}
                                 <div
-                                    className={`w-16 h-16 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+                                    className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform`}
                                 >
-                                    <Icon className="w-8 h-8 text-white" />
+                                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
                                 </div>
 
                                 {/* Content */}
-                                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+                                <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{feature.title}</h3>
+                                <p className="text-sm sm:text-base text-gray-400 leading-relaxed">{feature.description}</p>
                             </div>
                         );
                     })}

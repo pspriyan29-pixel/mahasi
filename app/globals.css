@@ -217,6 +217,228 @@ body {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
+/* ============================================
+   RESPONSIVE UTILITIES - Mobile First
+   ============================================ */
+
+/* Touch-Friendly Targets (Minimum 44x44px) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  @apply flex items-center justify-center;
+}
+
+.touch-target-lg {
+  min-width: 48px;
+  min-height: 48px;
+  @apply flex items-center justify-center;
+}
+
+/* Responsive Typography */
+.heading-responsive {
+  @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold;
+}
+
+.heading-responsive-xl {
+  @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold;
+}
+
+.subheading-responsive {
+  @apply text-xl sm:text-2xl md:text-3xl;
+}
+
+.body-responsive {
+  @apply text-base sm:text-lg;
+}
+
+/* Responsive Spacing */
+.spacing-section {
+  @apply py-12 sm:py-16 md:py-20 lg:py-24;
+}
+
+.spacing-section-sm {
+  @apply py-8 sm:py-12 md:py-16;
+}
+
+.spacing-component {
+  @apply py-6 sm:py-8 md:py-10;
+}
+
+/* Responsive Padding */
+.padding-responsive {
+  @apply px-4 sm:px-6 md:px-8 lg:px-12;
+}
+
+.padding-responsive-sm {
+  @apply px-3 sm:px-4 md:px-6;
+}
+
+/* Responsive Grid Layouts */
+.grid-responsive-1-2-3 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8;
+}
+
+.grid-responsive-1-2-4 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+}
+
+.grid-responsive-2-4 {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6;
+}
+
+/* Mobile Menu Utilities */
+.mobile-menu-open {
+  @apply overflow-hidden;
+}
+
+.mobile-menu-backdrop {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40;
+  animation: fade-in 0.2s ease-out;
+}
+
+.mobile-menu-panel {
+  @apply fixed inset-y-0 right-0 w-full sm:w-80 glass-strong z-50;
+  animation: slide-in-right 0.3s ease-out;
+}
+
+/* Responsive Buttons */
+.btn-responsive {
+  @apply px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4;
+  @apply text-sm sm:text-base;
+}
+
+.btn-mobile-full {
+  @apply w-full sm:w-auto;
+}
+
+/* Responsive Cards */
+.card-responsive {
+  @apply p-4 sm:p-6 md:p-8;
+}
+
+.card-responsive-sm {
+  @apply p-3 sm:p-4 md:p-6;
+}
+
+/* Mobile-Specific Utilities */
+@media (max-width: 640px) {
+  .mobile-stack {
+    @apply flex-col;
+  }
+
+  .mobile-full-width {
+    @apply w-full;
+  }
+
+  .mobile-text-center {
+    @apply text-center;
+  }
+
+  .mobile-hidden {
+    @apply hidden;
+  }
+
+  .mobile-p-4 {
+    @apply p-4;
+  }
+
+  /* Reduce animations on mobile for performance */
+  .premium-card {
+    @apply hover:scale-100;
+  }
+
+  .hover-lift {
+    @apply hover:translate-y-0;
+  }
+}
+
+/* Tablet-Specific Utilities */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid-2 {
+    @apply grid-cols-2;
+  }
+
+  .tablet-hidden {
+    @apply hidden;
+  }
+}
+
+/* Desktop-Only Utilities */
+@media (min-width: 1025px) {
+  .desktop-only {
+    @apply block;
+  }
+}
+
+/* Responsive Modal */
+.modal-responsive {
+  @apply w-full sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2;
+  @apply max-h-[90vh] sm:max-h-[85vh];
+  @apply m-4 sm:m-8;
+}
+
+.modal-mobile-fullscreen {
+  @apply fixed inset-0 sm:relative sm:inset-auto;
+  @apply rounded-none sm:rounded-2xl;
+  @apply m-0 sm:m-8;
+}
+
+/* Responsive Table */
+.table-responsive {
+  @apply w-full overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  @apply min-w-full;
+}
+
+/* Responsive Images */
+.img-responsive {
+  @apply w-full h-auto;
+  @apply object-cover;
+}
+
+.img-responsive-contain {
+  @apply w-full h-auto;
+  @apply object-contain;
+}
+
+/* Responsive Aspect Ratios */
+.aspect-responsive-16-9 {
+  @apply aspect-video;
+}
+
+.aspect-responsive-square {
+  @apply aspect-square;
+}
+
+/* Mobile Form Inputs */
+.input-mobile-friendly {
+  @apply text-base;
+  /* Prevents zoom on iOS */
+  min-height: 44px;
+}
+
+/* Responsive Flex Utilities */
+.flex-responsive {
+  @apply flex flex-col sm:flex-row;
+}
+
+.flex-responsive-reverse {
+  @apply flex flex-col-reverse sm:flex-row;
+}
+
+/* Gap Utilities */
+.gap-responsive {
+  @apply gap-3 sm:gap-4 md:gap-6 lg:gap-8;
+}
+
+.gap-responsive-sm {
+  @apply gap-2 sm:gap-3 md:gap-4;
+}
+
+
 /* Hover Lift Effect */
 .hover-lift {
   @apply transition-transform duration-300;
