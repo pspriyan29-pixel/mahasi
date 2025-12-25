@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Trophy, Users, Calendar, CheckCircle, XCircle, Clock, Eye, Download, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Trophy, Users, Calendar, CheckCircle, XCircle, Clock, Eye, Download, Image as ImageIcon, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -141,6 +141,13 @@ export default function CompetitionDetailPage() {
                         <div className="flex-1">
                             <h1 className="text-3xl font-bold mb-2">{competition.title}</h1>
                             <p className="text-gray-400">{competition.description}</p>
+                            <button
+                                onClick={() => router.push(`/instructor/competitions/${competition.id}/edit`)}
+                                className="mt-4 px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all font-semibold text-sm flex items-center gap-2"
+                            >
+                                <FileText className="w-4 h-4" />
+                                Edit Lomba
+                            </button>
                         </div>
                     </div>
 

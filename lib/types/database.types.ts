@@ -431,6 +431,109 @@ export interface Database {
                     updated_at?: string
                 }
             }
+            competitions: {
+                Row: {
+                    id: string
+                    title: string
+                    description: string | null
+                    category: string | null
+                    start_date: string | null
+                    end_date: string | null
+                    registration_deadline: string | null
+                    max_participants: number | null
+                    current_participants: number
+                    status: string
+                    requirements: string | null
+                    prizes: string | null
+                    banner_url: string | null
+                    created_by: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    title: string
+                    description?: string | null
+                    category?: string | null
+                    start_date?: string | null
+                    end_date?: string | null
+                    registration_deadline?: string | null
+                    max_participants?: number | null
+                    current_participants?: number
+                    status?: string
+                    requirements?: string | null
+                    prizes?: string | null
+                    banner_url?: string | null
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    title?: string
+                    description?: string | null
+                    category?: string | null
+                    start_date?: string | null
+                    end_date?: string | null
+                    registration_deadline?: string | null
+                    max_participants?: number | null
+                    current_participants?: number
+                    status?: string
+                    requirements?: string | null
+                    prizes?: string | null
+                    banner_url?: string | null
+                    created_by?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+            }
+            competition_registrations: {
+                Row: {
+                    id: string
+                    competition_id: string | null
+                    student_name: string
+                    nim: string
+                    email: string | null
+                    phone: string | null
+                    university: string | null
+                    ktm_url: string | null
+                    status: string
+                    registered_at: string
+                    approved_at: string | null
+                    approved_by: string | null
+                    rejection_reason: string | null
+                }
+                Insert: {
+                    id?: string
+                    competition_id?: string | null
+                    student_name: string
+                    nim: string
+                    email?: string | null
+                    phone?: string | null
+                    university?: string | null
+                    ktm_url?: string | null
+                    status?: string
+                    registered_at?: string
+                    approved_at?: string | null
+                    approved_by?: string | null
+                    rejection_reason?: string | null
+                }
+                Update: {
+                    id?: string
+                    competition_id?: string | null
+                    student_name?: string
+                    nim?: string
+                    email?: string | null
+                    phone?: string | null
+                    university?: string | null
+                    ktm_url?: string | null
+                    status?: string
+                    registered_at?: string
+                    approved_at?: string | null
+                    approved_by?: string | null
+                    rejection_reason?: string | null
+                }
+            }
         }
         Views: {
             [_ in never]: never
