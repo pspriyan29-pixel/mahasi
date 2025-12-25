@@ -13,6 +13,7 @@ import Testimonials from '@/components/Testimonials';
 import HowItWorks from '@/components/HowItWorks';
 import FAQ from '@/components/FAQ';
 import CircularGallery from '@/components/CircularGallery';
+import AdUnit from '@/components/AdUnit';
 import { Trophy, Users, Award, TrendingUp, ArrowRight, Sparkles, Zap, Shield, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -300,6 +301,9 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
+
+            {/* AdSense Unit */}
+            <AdUnit />
 
             <Footer />
         </div>
