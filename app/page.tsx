@@ -13,10 +13,10 @@ import Testimonials from '@/components/Testimonials';
 import HowItWorks from '@/components/HowItWorks';
 import FAQ from '@/components/FAQ';
 import CircularGallery from '@/components/CircularGallery';
+import AdInFeed from '@/components/AdInFeed';
 import AdUnit from '@/components/AdUnit';
 import { Trophy, Users, Award, TrendingUp, ArrowRight, Sparkles, Zap, Shield, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-
 import Logo from '@/components/Logo';
 
 export default function HomePage() {
@@ -183,8 +183,16 @@ export default function HomePage() {
                         </div>
                     ) : activeCompetitions.length > 0 ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {activeCompetitions.map((competition) => (
-                                <CompetitionCard key={competition.id} competition={competition} />
+                            {activeCompetitions.map((competition, index) => (
+                                <div key={competition.id} className="contents">
+                                    <CompetitionCard competition={competition} />
+                                    {/* Insert Ad after the 3rd item (index 2) */}
+                                    {index === 2 && (
+                                        <div className="md:col-span-2 lg:col-span-3">
+                                            <AdInFeed />
+                                        </div>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     ) : (

@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/client';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import AdInFeed from '@/components/AdInFeed';
 
 interface InstructorDashboardProps {
     user: any;
@@ -153,6 +154,11 @@ export default function InstructorDashboard({ user, profile }: InstructorDashboa
                                 </div>
                             );
                         })}
+                    </div>
+
+                    {/* AdSense Unit */}
+                    <div className="mb-12">
+                        <AdInFeed />
                     </div>
 
                     <div className="grid lg:grid-cols-3 gap-8">

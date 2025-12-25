@@ -71,8 +71,9 @@ function LoginForm() {
             const success = await signInAndRedirect(formData.email, formData.password);
             if (success) {
                 toast.success('Login berhasil! Mengarahkan ke dashboard...');
-                // Use replace to prevent back button issues
-                router.replace('/dashboard');
+                toast.success('Login berhasil! Mengarahkan ke dashboard...');
+                // Use push for better compatibility
+                router.push('/dashboard');
             } else {
                 toast.error('Login gagal. Sesi tidak dapat dibuat. Silakan coba lagi.');
             }

@@ -11,14 +11,9 @@ export default function DashboardPage() {
     const { user, profile, loading } = useAuth();
 
     useEffect(() => {
-        // Give auth state time to load before checking
-        const timer = setTimeout(() => {
-            if (!loading && !user) {
-                router.push('/login');
-            }
-        }, 300);
-
-        return () => clearTimeout(timer);
+        if (!loading && !user) {
+            router.push('/login');
+        }
     }, [user, loading, router]);
 
     if (loading) {
