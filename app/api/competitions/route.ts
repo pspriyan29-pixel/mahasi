@@ -82,11 +82,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Title is required' }, { status: 400 });
         }
 
+        // Generate slug from title
+        const generateSlug = (text: string): string => {
+            return text
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+        };
+
+        const slug = generateSlug(title);
+
         const { data, error } = await supabase
             .from('competitions')
             // @ts-ignore - Supabase types will be regenerated after migration
             .insert({
                 title,
+                slug,
                 description,
                 category_id,
                 start_date,
