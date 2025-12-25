@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS competitions (
     first_prize TEXT,
     second_prize TEXT,
     third_prize TEXT,
+    prizes TEXT, -- Backward compatibility with existing frontend
     requirements TEXT,
     
     -- Media
