@@ -100,6 +100,18 @@ export default function RootLayout({
                         gtag('config', 'G-NC4VZ93QZY');
                     `}
                 </Script>
+
+                {/* Consent Manager */}
+                <Script
+                    id="consent-manager"
+                    type="text/javascript"
+                    src="https://cdn.consentmanager.net/delivery/autoblocking/2ca13cb982a77.js"
+                    data-cmp-ab="1"
+                    data-cmp-host="d.delivery.consentmanager.net"
+                    data-cmp-cdn="cdn.consentmanager.net"
+                    data-cmp-codesrc="16"
+                    strategy="afterInteractive"
+                />
             </head>
             <body className="antialiased">
                 <AuthProvider>

@@ -37,14 +37,13 @@ export default function CompetitionDetailPage() {
         }
     }, [competitionId, user]);
 
-    const fetchCompetition = async () => {
-        // ... existing fetch logic
+    const fetchCompetition = async (id: string) => {
         try {
             const supabase = createClient();
             const { data, error } = await supabase
                 .from('competitions')
                 .select('*, profiles(full_name)')
-                .eq('id', params.id)
+                .eq('id', id)
                 .single();
 
             if (error) throw error;
@@ -57,15 +56,16 @@ export default function CompetitionDetailPage() {
         }
     };
 
-    const checkRegistrationStatus = async () => {
-        // ... existing check logic
+    const checkRegistrationStatus = async (id: string) => {
         try {
+            if (!user?.email) return; // Guard clause to ensure email exists
+
             const supabase = createClient();
             const { data } = await supabase
                 .from('competition_registrations')
                 .select('*')
-                .eq('competition_id', params.id)
-                .eq('email', user?.email) // Check by email
+                .eq('competition_id', id)
+                .eq('email', user.email) // Now TypeScript knows email is defined
                 .single();
 
             if (data) setIsRegistered(true);
