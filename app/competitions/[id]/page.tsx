@@ -133,11 +133,11 @@ export default function CompetitionDetailPage() {
         <div className="min-h-screen bg-black text-white">
             <Navbar />
 
-            {/* Registration Modal */}
+            {/* Registration Modal - Responsive */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 max-w-md w-full animate-scale-in">
-                        <h3 className="text-xl font-bold mb-4">Lengkapi Data Pendaftaran</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6 w-full max-w-md animate-scale-in max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-lg sm:text-xl font-bold mb-4">Lengkapi Data Pendaftaran</h3>
                         <form onSubmit={handleConfirmRegister} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-300">NIM <span className="text-red-400">*</span></label>
@@ -145,7 +145,7 @@ export default function CompetitionDetailPage() {
                                     type="text"
                                     value={formData.nim}
                                     onChange={(e) => setFormData({ ...formData, nim: e.target.value })}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500 text-base"
                                     placeholder="Contoh: 20241038"
                                     required
                                 />
@@ -153,25 +153,25 @@ export default function CompetitionDetailPage() {
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-gray-300">Nomor WhatsApp</label>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-500 text-base"
                                     placeholder="Contoh: 081234567890"
                                 />
                             </div>
-                            <div className="flex gap-3 pt-2">
+                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 py-3 px-4 rounded-xl font-semibold bg-gray-700 hover:bg-gray-600 transition-colors"
+                                    className="w-full sm:flex-1 py-3 px-4 rounded-xl font-semibold bg-gray-700 hover:bg-gray-600 transition-colors touch-target"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={registering}
-                                    className="flex-1 py-3 px-4 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    className="w-full sm:flex-1 py-3 px-4 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity disabled:opacity-50 touch-target"
                                 >
                                     {registering ? 'Memproses...' : 'Daftar Sekarang'}
                                 </button>
@@ -181,8 +181,8 @@ export default function CompetitionDetailPage() {
                 </div>
             )}
 
-            {/* Banner Section */}
-            <div className="relative h-[400px] w-full">
+            {/* Banner Section - Responsive */}
+            <div className="relative h-[300px] sm:h-[350px] md:h-[400px] w-full">
                 {competition.banner_url ? (
                     <Image
                         src={competition.banner_url}
@@ -196,30 +196,32 @@ export default function CompetitionDetailPage() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
-                <div className="absolute bottom-0 left-0 right-0 pb-12">
+                <div className="absolute bottom-0 left-0 right-0 pb-6 sm:pb-8 md:pb-12">
                     <div className="container-custom">
-                        <Link href="/competitions" className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors">
+                        <Link href="/competitions" className="inline-flex items-center text-gray-400 hover:text-white mb-4 sm:mb-6 transition-colors touch-target">
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Kembali ke Daftar Lomba
+                            <span className="hidden sm:inline">Kembali ke Daftar Lomba</span>
+                            <span className="sm:hidden">Kembali</span>
                         </Link>
 
-                        <div className="flex flex-wrap items-end justify-between gap-6">
+                        <div className="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
                             <div>
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${competition.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2 sm:mb-3 ${competition.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
                                     }`}>
                                     {competition.category || 'Umum'}
                                 </span>
-                                <h1 className="text-4xl md:text-5xl font-bold mb-4">{competition.title}</h1>
-                                <div className="flex flex-wrap gap-6 text-gray-300">
+                                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">{competition.title}</h1>
+                                <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-sm sm:text-base text-gray-300">
                                     <div className="flex items-center gap-2">
-                                        <Calendar className="w-5 h-5 text-purple-400" />
-                                        <span>Deadline: {new Date(competition.registration_deadline).toLocaleDateString('id-ID')}</span>
+                                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                                        <span className="hidden sm:inline">Deadline: {new Date(competition.registration_deadline).toLocaleDateString('id-ID')}</span>
+                                        <span className="sm:hidden">{new Date(competition.registration_deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Users className="w-5 h-5 text-blue-400" />
+                                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                                         <span>{competition.current_participants} Peserta</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="hidden md:flex items-center gap-2">
                                         <Trophy className="w-5 h-5 text-yellow-400" />
                                         <span>Total Hadiah: Lihat Detail</span>
                                     </div>
@@ -230,44 +232,44 @@ export default function CompetitionDetailPage() {
                 </div>
             </div>
 
-            <div className="container-custom py-12">
-                <div className="grid lg:grid-cols-3 gap-8">
+            <div className="container-custom py-6 sm:py-8 md:py-12">
+                <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
                     {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                         {/* Description */}
-                        <div className="glass-strong rounded-2xl p-8">
-                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                <FileText className="w-6 h-6 text-purple-400" />
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2">
+                                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                                 Deskripsi Lomba
                             </h2>
                             <div className="prose prose-invert max-w-none">
-                                <p className="whitespace-pre-wrap text-gray-300 leading-relaxed">
+                                <p className="whitespace-pre-wrap text-sm sm:text-base text-gray-300 leading-relaxed">
                                     {competition.description}
                                 </p>
                             </div>
                         </div>
 
                         {/* Prizes */}
-                        <div className="glass-strong rounded-2xl p-8">
-                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                <Trophy className="w-6 h-6 text-yellow-400" />
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2">
+                                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
                                 Hadiah & Penghargaan
                             </h2>
                             <div className="prose prose-invert max-w-none">
-                                <pre className="whitespace-pre-wrap font-sans text-gray-300 bg-transparent p-0">
+                                <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base text-gray-300 bg-transparent p-0">
                                     {competition.prizes || 'Informasi hadiah belum tersedia.'}
                                 </pre>
                             </div>
                         </div>
 
                         {/* Requirements */}
-                        <div className="glass-strong rounded-2xl p-8">
-                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                <CheckCircle className="w-6 h-6 text-green-400" />
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2">
+                                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
                                 Persyaratan
                             </h2>
                             <div className="prose prose-invert max-w-none">
-                                <pre className="whitespace-pre-wrap font-sans text-gray-300 bg-transparent p-0">
+                                <pre className="whitespace-pre-wrap font-sans text-sm sm:text-base text-gray-300 bg-transparent p-0">
                                     {competition.requirements || 'Tidak ada persyaratan khusus.'}
                                 </pre>
                             </div>
@@ -277,8 +279,8 @@ export default function CompetitionDetailPage() {
                     {/* Sidebar */}
                     <div className="space-y-6">
                         {/* Registration Card */}
-                        <div className="glass-strong rounded-2xl p-6 sticky top-24">
-                            <h3 className="text-xl font-bold mb-4">Pendaftaran</h3>
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:sticky lg:top-24">
+                            <h3 className="text-lg sm:text-xl font-bold mb-4">Pendaftaran</h3>
 
                             {isRegistered ? (
                                 <div className="bg-green-500/20 border border-green-500/50 rounded-xl p-4 mb-4 text-center">
@@ -295,39 +297,39 @@ export default function CompetitionDetailPage() {
                                 <button
                                     onClick={handleRegisterClick}
                                     disabled={registering}
-                                    className="w-full btn-primary py-4 text-lg font-bold mb-4 flex items-center justify-center gap-2"
+                                    className="w-full btn-primary py-3 sm:py-4 text-base sm:text-lg font-bold mb-4 flex items-center justify-center gap-2 touch-target"
                                 >
                                     {registering ? 'Memproses...' : 'Daftar Sekarang'}
                                 </button>
                             )}
 
-                            <div className="space-y-4 text-sm text-gray-400">
+                            <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-400">
                                 <div className="flex justify-between py-2 border-b border-gray-800">
                                     <span>Biaya Pendaftaran</span>
                                     <span className="text-green-400 font-semibold">GRATIS</span>
                                 </div>
                                 <div className="flex justify-between py-2 border-b border-gray-800">
                                     <span>Batas Pendaftaran</span>
-                                    <span>{new Date(competition.registration_deadline).toLocaleDateString('id-ID')}</span>
+                                    <span className="text-right">{new Date(competition.registration_deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                 </div>
                                 <div className="flex justify-between py-2 border-b border-gray-800">
                                     <span>Pengumuman</span>
-                                    <span>{new Date(competition.end_date).toLocaleDateString('id-ID')}</span>
+                                    <span className="text-right">{new Date(competition.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Share */}
-                        <div className="glass-strong rounded-2xl p-6">
-                            <h3 className="font-bold mb-4 flex items-center gap-2">
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2">
                                 <Share2 className="w-4 h-4" />
                                 Bagikan
                             </h3>
                             <div className="flex gap-2">
-                                <button className="flex-1 py-2 rounded-lg bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/30 transition-colors text-sm font-semibold">
+                                <button className="flex-1 py-2 sm:py-3 rounded-lg bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/30 transition-colors text-xs sm:text-sm font-semibold touch-target">
                                     WhatsApp
                                 </button>
-                                <button className="flex-1 py-2 rounded-lg bg-[#1DA1F2]/20 text-[#1DA1F2] hover:bg-[#1DA1F2]/30 transition-colors text-sm font-semibold">
+                                <button className="flex-1 py-2 sm:py-3 rounded-lg bg-[#1DA1F2]/20 text-[#1DA1F2] hover:bg-[#1DA1F2]/30 transition-colors text-xs sm:text-sm font-semibold touch-target">
                                     Twitter
                                 </button>
                             </div>

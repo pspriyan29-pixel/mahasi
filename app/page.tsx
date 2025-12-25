@@ -127,32 +127,32 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Stats Section */}
-            <section className="pb-20 relative">
+            {/* Stats Section - Responsive */}
+            <section className="pb-12 sm:pb-16 md:pb-20 relative">
                 <div className="container-custom">
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="glass-strong rounded-2xl p-8 text-center hover:scale-105 transition-all">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4">
-                                <Trophy className="w-8 h-8 text-white" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center hover:scale-105 transition-all">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
-                            <h3 className="text-4xl font-bold gradient-text mb-2">{stats.totalCompetitions}+</h3>
-                            <p className="text-gray-400">Total Lomba</p>
+                            <h3 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">{stats.totalCompetitions}+</h3>
+                            <p className="text-gray-400 text-sm sm:text-base">Total Lomba</p>
                         </div>
 
-                        <div className="glass-strong rounded-2xl p-8 text-center hover:scale-105 transition-all">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mx-auto mb-4">
-                                <Users className="w-8 h-8 text-white" />
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center hover:scale-105 transition-all">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
-                            <h3 className="text-4xl font-bold gradient-text mb-2">{stats.totalParticipants}+</h3>
-                            <p className="text-gray-400">Peserta Aktif</p>
+                            <h3 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">{stats.totalParticipants}+</h3>
+                            <p className="text-gray-400 text-sm sm:text-base">Peserta Aktif</p>
                         </div>
 
-                        <div className="glass-strong rounded-2xl p-8 text-center hover:scale-105 transition-all">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-4">
-                                <Award className="w-8 h-8 text-white" />
+                        <div className="glass-strong rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center hover:scale-105 transition-all sm:col-span-2 md:col-span-1">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                <Award className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
-                            <h3 className="text-4xl font-bold gradient-text mb-2">{stats.totalWinners}+</h3>
-                            <p className="text-gray-400">Pemenang</p>
+                            <h3 className="text-3xl sm:text-4xl font-bold gradient-text mb-2">{stats.totalWinners}+</h3>
+                            <p className="text-gray-400 text-sm sm:text-base">Pemenang</p>
                         </div>
                     </div>
                 </div>
@@ -161,17 +161,17 @@ export default function HomePage() {
             {/* Features Section */}
             <Features />
 
-            {/* Active Competitions */}
-            <section className="pb-20 relative">
+            {/* Active Competitions - Responsive */}
+            <section className="pb-12 sm:pb-16 md:pb-20 relative">
                 <div className="container-custom">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
                         <div>
-                            <h2 className="text-4xl font-bold mb-2">
+                            <h2 className="text-3xl sm:text-4xl font-bold mb-2">
                                 Lomba <span className="gradient-text">Aktif</span>
                             </h2>
-                            <p className="text-gray-400">Daftar sekarang sebelum kuota penuh!</p>
+                            <p className="text-gray-400 text-sm sm:text-base">Daftar sekarang sebelum kuota penuh!</p>
                         </div>
-                        <Link href="/competitions" className="btn-secondary flex items-center gap-2">
+                        <Link href="/competitions" className="btn-secondary flex items-center gap-2 w-full sm:w-auto justify-center touch-target">
                             Lihat Semua
                             <ArrowRight className="w-4 h-4" />
                         </Link>
@@ -283,25 +283,25 @@ export default function HomePage() {
             {/* FAQ */}
             <FAQ />
 
-            {/* CTA Section */}
-            <section className="pb-20 relative">
+            {/* CTA Section - Responsive */}
+            <section className="pb-12 sm:pb-16 md:pb-20 relative">
                 <div className="container-custom">
-                    <div className="glass-strong rounded-3xl p-12 text-center relative overflow-hidden">
+                    <div className="glass-strong rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 text-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10"></div>
                         <div className="relative z-10">
-                            <TrendingUp className="w-16 h-16 text-purple-400 mx-auto mb-6" />
-                            <h2 className="text-4xl font-bold mb-4">
+                            <TrendingUp className="w-12 h-12 sm:w-16 sm:h-16 text-purple-400 mx-auto mb-4 sm:mb-6" />
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
                                 Siap Berkompetisi?
                             </h2>
-                            <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
+                            <p className="text-sm sm:text-base text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
                                 Bergabunglah dengan ribuan mahasiswa lainnya dan raih prestasi melalui berbagai kompetisi menarik.
                                 Daftar sekarang dan mulai perjalanan Anda!
                             </p>
-                            <div className="flex flex-wrap gap-4 justify-center">
-                                <Link href="/register" className="btn-primary">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+                                <Link href="/register" className="btn-primary w-full sm:w-auto touch-target">
                                     Daftar Sekarang
                                 </Link>
-                                <Link href="/competitions" className="btn-secondary">
+                                <Link href="/competitions" className="btn-secondary w-full sm:w-auto touch-target">
                                     Browse Lomba
                                 </Link>
                             </div>
