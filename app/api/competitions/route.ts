@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
 
         let query = supabase
             .from('competitions')
-            .select('*')
+            .select(`
+                *,
+                category:competition_categories(id, name, slug, icon, color)
+            `)
             .order('created_at', { ascending: false });
 
         // If not instructor, only show active competitions
@@ -26,7 +29,7 @@ export async function GET(request: NextRequest) {
         }
 
         if (category) {
-            query = query.eq('category', category);
+            query = query.eq('competition_categories.slug', category);
         }
 
         const { data, error } = await query;
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
         const {
             title,
             description,
-            category,
+            category_id,
             start_date,
             end_date,
             registration_deadline,
@@ -81,10 +84,11 @@ export async function POST(request: NextRequest) {
 
         const { data, error } = await supabase
             .from('competitions')
+            // @ts-ignore - Supabase types will be regenerated after migration
             .insert({
                 title,
                 description,
-                category,
+                category_id,
                 start_date,
                 end_date,
                 registration_deadline,
@@ -95,7 +99,10 @@ export async function POST(request: NextRequest) {
                 status,
                 created_by: session.user.id
             })
-            .select()
+            .select(`
+                *,
+                category:competition_categories(id, name, slug, icon, color)
+            `)
             .single();
 
         if (error) throw error;

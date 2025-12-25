@@ -14,6 +14,7 @@ export async function GET(
             .from('competitions')
             .select(`
                 *,
+                category:competition_categories(id, name, slug, icon, color),
                 registrations:competition_registrations(count)
             `)
             .eq('id', id)
@@ -61,7 +62,10 @@ export async function PUT(
             // @ts-ignore - Supabase types will be regenerated after migration
             .update(body)
             .eq('id', id)
-            .select()
+            .select(`
+                *,
+                category:competition_categories(id, name, slug, icon, color)
+            `)
             .single();
 
         if (error) throw error;

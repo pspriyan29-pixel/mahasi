@@ -6,15 +6,17 @@ import { ArrowLeft, Trophy, Calendar, Users, FileText, Award, Save, Image as Ima
 import { useToast } from '@/contexts/ToastContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import BannerUpload from '@/components/BannerUpload';
+import { useCategories } from '@/hooks/useCategories';
 
 export default function CreateCompetitionPage() {
     const router = useRouter();
     const toast = useToast();
+    const { categories, loading: categoriesLoading } = useCategories();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        category: '',
+        category_id: '',
         start_date: '',
         end_date: '',
         registration_deadline: '',
@@ -117,17 +119,17 @@ export default function CreateCompetitionPage() {
                                     Kategori
                                 </label>
                                 <select
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                    value={formData.category_id}
+                                    onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                                     className="w-full px-4 py-3 glass-strong rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    disabled={categoriesLoading}
                                 >
-                                    <option value="">Pilih Kategori</option>
-                                    <option value="Coding">Coding</option>
-                                    <option value="Design">Design</option>
-                                    <option value="Business">Business</option>
-                                    <option value="Innovation">Innovation</option>
-                                    <option value="Hackathon">Hackathon</option>
-                                    <option value="Research">Research</option>
+                                    <option value="">{categoriesLoading ? 'Memuat kategori...' : 'Pilih Kategori'}</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.icon} {cat.name}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
