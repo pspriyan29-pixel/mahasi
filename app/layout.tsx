@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -77,6 +78,12 @@ export default function RootLayout({
             <head>
                 <meta name="google-adsense-account" content="ca-pub-6133261181364771" />
                 <StructuredData />
+                <Script
+                    async
+                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6133261181364771"
+                    crossOrigin="anonymous"
+                    strategy="afterInteractive"
+                />
             </head>
             <body className="antialiased">
                 <AuthProvider>

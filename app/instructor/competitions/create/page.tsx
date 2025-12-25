@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trophy, Calendar, Users, FileText, Award, Save } from 'lucide-react';
+import { ArrowLeft, Trophy, Calendar, Users, FileText, Award, Save, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import BannerUpload from '@/components/BannerUpload';
 
 export default function CreateCompetitionPage() {
     const router = useRouter();
@@ -20,6 +21,7 @@ export default function CreateCompetitionPage() {
         max_participants: '',
         requirements: '',
         prizes: '',
+        banner_url: '',
         status: 'draft'
     });
 
@@ -88,6 +90,12 @@ export default function CreateCompetitionPage() {
                         </h2>
 
                         <div className="space-y-4">
+                            {/* Banner Upload */}
+                            <BannerUpload
+                                onUploadComplete={(url) => setFormData(prev => ({ ...prev, banner_url: url }))}
+                                currentUrl={formData.banner_url}
+                            />
+
                             {/* Title */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-300 mb-2">
@@ -231,15 +239,16 @@ export default function CreateCompetitionPage() {
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-300 mb-2">
-                                    Hadiah
+                                    Detail Hadiah
                                 </label>
                                 <textarea
                                     value={formData.prizes}
                                     onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
-                                    placeholder="Contoh: Juara 1: Rp 5.000.000, Juara 2: Rp 3.000.000"
+                                    placeholder="Baris pertama akan menjadi Highlight Hadiah Utama.&#10;Contoh:&#10;Total Hadiah Rp 10.000.000&#10;Juara 1: Rp 5.000.000&#10;Juara 2: Rp 3.000.000"
                                     rows={4}
                                     className="w-full px-4 py-3 glass-strong rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 />
+                                <p className="text-xs text-gray-400 mt-2">* Baris pertama akan ditampilkan pada kartu lomba sebagai Highlight Hadiah</p>
                             </div>
                         </div>
                     </div>
