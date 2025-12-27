@@ -1,0 +1,31 @@
+{
+    "imports": {
+        "std/": "https://deno.land/std@0.168.0/",
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+    },
+    "compilerOptions": {
+        "target": "esnext",
+        "lib": [
+            "deno.ns",
+            "deno.window",
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    }
+}
