@@ -214,47 +214,7 @@ class MockDatabase {
   }
 
   get orders(): Order[] {
-    return this.getStorageItem<Order[]>('mock_orders', [
-      {
-        id: 'ord-1',
-        order_code: 'FW-2026-0001',
-        user_id: 'user-id-customer',
-        service_id: 's3',
-        title: 'Pembuatan Web Portfolio Next.js',
-        description: 'Tolong buatkan website portfolio modern 3D soft white menggunakan Tailwind CSS dan Framer Motion. Struktur halaman utama harus memukau dengan navigasi yang halus.',
-        deadline: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days from now
-        difficulty: 'normal',
-        priority: 'normal',
-        estimated_price: 250000,
-        final_price: 250000,
-        status: 'in_progress',
-        progress: 45,
-        revision_limit: 3,
-        revision_used: 0,
-        admin_note: 'Project sedang didevelop bagian Frontend visual.',
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'ord-2',
-        order_code: 'FW-2026-0002',
-        user_id: 'user-id-customer',
-        service_id: 's1',
-        title: 'Perapian Bab 1-3 Makalah Manajemen',
-        description: 'Merapikan format penulisan, margin, spasi, daftar pustaka APA style, serta struktur bab 1-3 makalah manajemen bisnis.',
-        deadline: new Date(Date.now() + 86400000).toISOString(), // 1 day from now
-        difficulty: 'easy',
-        priority: 'cepat',
-        estimated_price: 45000,
-        final_price: 50000,
-        status: 'waiting_payment',
-        progress: 0,
-        revision_limit: 3,
-        revision_used: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ]);
+    return this.getStorageItem<Order[]>('mock_orders', []);
   }
 
   set orders(val: Order[]) {
@@ -262,19 +222,7 @@ class MockDatabase {
   }
 
   get files(): OrderFile[] {
-    return this.getStorageItem<OrderFile[]>('mock_files', [
-      {
-        id: 'f-1',
-        order_id: 'ord-1',
-        uploaded_by: 'user-id-customer',
-        file_name: 'brief_portfolio.docx',
-        file_url: '#',
-        file_size: 15240,
-        file_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        file_category: 'user_attachment',
-        created_at: new Date().toISOString()
-      }
-    ]);
+    return this.getStorageItem<OrderFile[]>('mock_files', []);
   }
 
   set files(val: OrderFile[]) {
@@ -282,26 +230,7 @@ class MockDatabase {
   }
 
   get payments(): Payment[] {
-    return this.getStorageItem<Payment[]>('mock_payments', [
-      {
-        id: 'pay-1',
-        order_id: 'ord-1',
-        amount: 250000,
-        method: 'qris_manual',
-        status: 'paid',
-        proof_url: '/dummy_proof.jpg',
-        paid_at: new Date().toISOString(),
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 'pay-2',
-        order_id: 'ord-2',
-        amount: 50000,
-        method: 'qris_manual',
-        status: 'unpaid',
-        created_at: new Date().toISOString()
-      }
-    ]);
+    return this.getStorageItem<Payment[]>('mock_payments', []);
   }
 
   set payments(val: Payment[]) {
@@ -317,34 +246,7 @@ class MockDatabase {
   }
 
   get threads(): ForumThread[] {
-    return this.getStorageItem<ForumThread[]>('mock_threads', [
-      {
-        id: 't-1',
-        user_id: 'user-id-customer',
-        title: 'Rekomendasi Library Animasi Selain Framer Motion',
-        content: 'Halo teman-teman, apakah ada rekomendasi library animasi web yang ringan dan mudah digunakan selain Framer Motion? Untuk project Next.js.',
-        category: 'Tanya Coding',
-        status: 'open',
-        is_pinned: false,
-        created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-        updated_at: new Date().toISOString(),
-        user_name: 'Budi Santoso',
-        replies_count: 1
-      },
-      {
-        id: 't-2',
-        user_id: 'user-id-riyan',
-        title: 'Tips Penulisan Bab 1 Laporan Penelitian Biar Cepat Di-Approve',
-        content: 'Ada beberapa kesalahan umum mahasiswa saat menulis bab 1. Simak tips dari admin: 1. Latar belakang harus mengerucut, 2. Batasan masalah jelas, 3. Rumusan masalah sejalan dengan tujuan.',
-        category: 'Tips FlashWork',
-        status: 'open',
-        is_pinned: true,
-        created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-        updated_at: new Date().toISOString(),
-        user_name: 'Riyan Perdhana Putra (Admin)',
-        replies_count: 0
-      }
-    ]);
+    return this.getStorageItem<ForumThread[]>('mock_threads', []);
   }
 
   set threads(val: ForumThread[]) {
@@ -352,16 +254,7 @@ class MockDatabase {
   }
 
   get comments(): ForumComment[] {
-    return this.getStorageItem<ForumComment[]>('mock_comments', [
-      {
-        id: 'c-1',
-        thread_id: 't-1',
-        user_id: 'user-id-riyan',
-        content: 'Anda bisa coba GSAP untuk animasi yang sangat kompleks, atau anime.js jika ingin yang super ringan tanpa binding khusus React. Tapi untuk Next.js, Framer Motion adalah yang paling terintegrasi.',
-        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-        user_name: 'Riyan Perdhana Putra (Admin)'
-      }
-    ]);
+    return this.getStorageItem<ForumComment[]>('mock_comments', []);
   }
 
   set comments(val: ForumComment[]) {
@@ -369,18 +262,7 @@ class MockDatabase {
   }
 
   get notifications(): Notification[] {
-    return this.getStorageItem<Notification[]>('mock_notifications', [
-      {
-        id: 'n-1',
-        user_id: 'user-id-customer',
-        title: 'Pembayaran Diterima',
-        message: 'Pembayaran untuk order FW-2026-0001 berhasil diverifikasi. Pesanan Anda kini masuk ke pengerjaan.',
-        type: 'payment',
-        is_read: false,
-        link_url: '/dashboard/user/order/ord-1',
-        created_at: new Date().toISOString()
-      }
-    ]);
+    return this.getStorageItem<Notification[]>('mock_notifications', []);
   }
 
   set notifications(val: Notification[]) {

@@ -251,15 +251,19 @@ returns trigger as $$
 declare
   default_role text := 'user';
 begin
-  -- Jadikan user pertama sebagai admin untuk kemudahan setup, sisanya user
-  if not exists (select 1 from public.profiles) then
+  -- Jadikan perdhanariyan@gmail.com sebagai admin, sisanya user biasa
+  if new.email = 'perdhanariyan@gmail.com' then
     default_role := 'admin';
   end if;
 
   insert into public.profiles (id, full_name, phone, role, avatar_url)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', 'User Baru'),
+    coalesce(
+      new.raw_user_meta_data->>'full_name', 
+      new.raw_user_meta_data->>'name', 
+      split_part(new.email, '@', 1)
+    ),
     new.raw_user_meta_data->>'phone',
     default_role,
     new.raw_user_meta_data->>'avatar_url'
