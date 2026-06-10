@@ -131,7 +131,27 @@ export default function AdminQueueKanbanPage() {
         }
       }
       
-      await deliverOrder(id, uploadedPreviewUrl || undefined, uploadedFinalUrl);
+      let previewData: any = uploadedPreviewUrl;
+      if (previewFileObj && uploadedPreviewUrl) {
+        previewData = {
+          url: uploadedPreviewUrl,
+          name: previewFileObj.name,
+          size: previewFileObj.size,
+          type: previewFileObj.type || 'application/octet-stream'
+        };
+      }
+      
+      let finalData: any = uploadedFinalUrl;
+      if (finalFileObj && uploadedFinalUrl) {
+        finalData = {
+          url: uploadedFinalUrl,
+          name: finalFileObj.name,
+          size: finalFileObj.size,
+          type: finalFileObj.type || 'application/octet-stream'
+        };
+      }
+      
+      await deliverOrder(id, previewData || undefined, finalData);
       setSelectedOrder(null);
       setPreviewFile('');
       setFinalFile('');

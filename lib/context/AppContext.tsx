@@ -36,7 +36,7 @@ interface AppContextType {
   payOrder: (orderId: string, proofName: string) => Promise<void>;
   verifyPayment: (orderId: string, isValid: boolean) => Promise<void>;
   updateOrderProgress: (orderId: string, progress: number, adminNote: string) => Promise<void>;
-  deliverOrder: (orderId: string, previewUrl?: string, finalUrl?: string) => Promise<void>;
+  deliverOrder: (orderId: string, previewData?: any, finalData?: any) => Promise<void>;
   requestRevision: (orderId: string, note: string) => Promise<void>;
   completeOrder: (orderId: string) => Promise<void>;
 
@@ -656,7 +656,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
   };
 
-  const deliverOrder = async (orderId: string, previewUrl?: string, finalUrl?: string) => {
+  const deliverOrder = async (orderId: string, previewData?: any, finalData?: any) => {
     
       try {
         const { data: order, error: fetchErr } = await supabase
@@ -678,29 +678,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         // Tambah file admin_preview & admin_final ke order_files
         const currentUserId = user?.id || '';
-        if (previewUrl) {
+        if (previewData) {
+          const isObj = typeof previewData === 'object';
           await supabase
             .from('order_files')
             .insert({
               order_id: orderId,
               uploaded_by: currentUserId,
-              file_name: 'hasil_preview_watermark.pdf',
-              file_url: previewUrl,
-              file_size: 245000,
-              file_type: 'application/pdf',
+              file_name: isObj ? previewData.name : 'hasil_preview_watermark.pdf',
+              file_url: isObj ? previewData.url : previewData,
+              file_size: isObj ? previewData.size : 245000,
+              file_type: isObj ? previewData.type : 'application/pdf',
               file_category: 'admin_preview'
             });
         }
-        if (finalUrl) {
+        if (finalData) {
+          const isObj = typeof finalData === 'object';
           await supabase
             .from('order_files')
             .insert({
               order_id: orderId,
               uploaded_by: currentUserId,
-              file_name: 'hasil_final_lengkap.zip',
-              file_url: finalUrl,
-              file_size: 1045000,
-              file_type: 'application/zip',
+              file_name: isObj ? finalData.name : 'hasil_final_lengkap.zip',
+              file_url: isObj ? finalData.url : finalData,
+              file_size: isObj ? finalData.size : 1045000,
+              file_type: isObj ? finalData.type : 'application/zip',
               file_category: 'admin_final'
             });
         }

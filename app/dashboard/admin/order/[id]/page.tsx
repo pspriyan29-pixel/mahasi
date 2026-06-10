@@ -156,7 +156,27 @@ export default function AdminOrderDetailPage() {
         }
       }
 
-      await deliverOrder(order.id, uploadedPreviewUrl || undefined, uploadedFinalUrl);
+      let previewData: any = uploadedPreviewUrl;
+      if (previewFileObj && uploadedPreviewUrl) {
+        previewData = {
+          url: uploadedPreviewUrl,
+          name: previewFileObj.name,
+          size: previewFileObj.size,
+          type: previewFileObj.type || 'application/octet-stream'
+        };
+      }
+      
+      let finalData: any = uploadedFinalUrl;
+      if (finalFileObj && uploadedFinalUrl) {
+        finalData = {
+          url: uploadedFinalUrl,
+          name: finalFileObj.name,
+          size: finalFileObj.size,
+          type: finalFileObj.type || 'application/octet-stream'
+        };
+      }
+
+      await deliverOrder(order.id, previewData || undefined, finalData);
       setActionSuccess('Hasil pekerjaan berhasil diunggah dan dikirim ke pelanggan!');
       setPreviewFile('');
       setFinalFile('');
