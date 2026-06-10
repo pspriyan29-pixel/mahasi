@@ -262,11 +262,22 @@ export default function CreateOrderPage() {
             </div>
           </div>
 
+          {/* Tombol Submit di bawah kolom kiri form */}
+          <div className="pt-2">
+            <button 
+              type="submit"
+              className="w-full inline-flex items-center justify-center gap-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+            >
+              Kirim Brief & Buat Order
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
         </div>
 
         {/* Right: Estimator Sidebar */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white rounded-3xl p-6 shadow-xl flex flex-col justify-between aspect-[5/4] sm:aspect-square lg:aspect-auto animate-fade-in-up delay-200 animate-gradient relative overflow-hidden">
+          <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white rounded-3xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4.5 h-4.5 animate-pulse" />
