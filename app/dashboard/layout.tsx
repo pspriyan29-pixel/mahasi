@@ -281,23 +281,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span>© {new Date().getFullYear()} FlashWork. Hak Cipta Dilindungi.</span>
             <div className="flex items-center gap-4">
               <Link href="/forum" className="hover:text-blue-600 transition-colors">Forum Komunitas</Link>
-              {(isMockMode || user?.email === 'perdhanariyan@gmail.com') && (
-                <>
-                  <span>•</span>
-                  {/* Role Switcher Demo ditaruh di Footer */}
-                  <button
-                    onClick={() => {
-                      const targetRole = role === 'admin' ? 'user' : 'admin';
-                      switchRole(targetRole);
-                      router.push(targetRole === 'admin' ? '/dashboard/admin' : '/dashboard/user');
-                    }}
-                    className="hover:text-indigo-600 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded border border-slate-200 hover:bg-indigo-50 transition-all"
-                  >
-                    <SwitchCamera className="w-3 h-3 text-indigo-500" />
-                    Masuk sebagai {role === 'admin' ? 'Pelanggan' : 'Admin (Riyan)'}
-                  </button>
-                </>
-              )}
+
             </div>
           </footer>
         </main>

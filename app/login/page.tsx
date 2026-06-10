@@ -170,45 +170,8 @@ export default function LoginPage() {
                   )}
                 </button>
               </form>
-
-              {/* Separator */}
-              <div className="relative flex items-center justify-center">
-                <div className="border-t border-slate-100 w-full" />
-                <span className="bg-white px-3 text-[10px] font-black text-slate-450 uppercase tracking-widest absolute">AKUN DEMO INSTAN</span>
-              </div>
-
-              {/* Instant Demo Accounts */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleInstantLogin('user')}
-                  disabled={isLoading}
-                  className="flex flex-col items-center justify-center p-3 border border-slate-200/80 hover:border-blue-500 hover:bg-blue-50/10 rounded-2xl text-center transition-all group active:scale-[0.98] disabled:opacity-50"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-100 transition-colors mb-1.5">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-800">Pelanggan</span>
-                  <span className="text-[8px] text-slate-400 font-medium mt-0.5">Lacak & Pesan Tugas</span>
-                </button>
-
-                <button
-                  onClick={() => handleInstantLogin('admin')}
-                  disabled={isLoading}
-                  className="flex flex-col items-center justify-center p-3 border border-slate-200/80 hover:border-indigo-500 hover:bg-indigo-50/10 rounded-2xl text-center transition-all group active:scale-[0.98] disabled:opacity-50"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-100 transition-colors mb-1.5">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-800">Admin (Riyan)</span>
-                  <span className="text-[8px] text-slate-400 font-medium mt-0.5">Kelola Antrean Kerja</span>
-                </button>
-              </div>
             </>
           )}
-
-          <div className="text-center text-[9px] text-slate-400 leading-normal font-semibold">
-            Interactive Demo Mode aktif. Untuk tujuan pengujian cepat, silakan gunakan tombol <strong>Akun Demo Instan</strong>.
-          </div>
 
         </div>
       </div>

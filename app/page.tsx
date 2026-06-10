@@ -96,11 +96,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
-      {/* Banner Mock Mode */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-xs py-2 px-4 text-center font-medium shadow-inner flex items-center justify-center gap-2 animate-gradient">
-        <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-        <span>Aplikasi berjalan dalam <strong>Interactive Demo Mode</strong> (Penyimpanan Local Storage aktif). Anda bisa mencoba alur User & Admin!</span>
-      </div>
+
 
       {/* Navigation */}
       <header className={`sticky top-0 z-40 w-full border-b transition-all duration-300 ${
@@ -751,17 +747,7 @@ export default function LandingPage() {
           <span>© {new Date().getFullYear()} FlashWork. Hak Cipta Dilindungi.</span>
           <div className="flex items-center gap-4">
             <Link href="/login" className="hover:text-blue-600 transition-colors font-bold text-slate-500">Portal Masuk</Link>
-            <span>•</span>
-            <button
-              onClick={() => {
-                login('perdhanariyan@gmail.com', 'admin');
-                router.push('/dashboard/admin');
-              }}
-              className="hover:text-indigo-600 flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded border border-slate-200 hover:bg-indigo-50 transition-all font-bold text-slate-500"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              Portal Admin (Riyan)
-            </button>
+
           </div>
         </div>
       </footer>
