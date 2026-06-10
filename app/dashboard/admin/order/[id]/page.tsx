@@ -24,6 +24,8 @@ export default function AdminOrderDetailPage() {
   const [progressInput, setProgressInput] = useState(50);
   const [previewFile, setPreviewFile] = useState('');
   const [finalFile, setFinalFile] = useState('');
+  const [previewFileObj, setPreviewFileObj] = useState<File | null>(null);
+  const [finalFileObj, setFinalFileObj] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
@@ -68,7 +70,8 @@ export default function AdminOrderDetailPage() {
       revision_requested: { bg: 'bg-teal-50', text: 'text-teal-600', label: 'Revisi Diminta' },
       revision_in_progress: { bg: 'bg-sky-50', text: 'text-sky-600', label: 'Revisi Sedang Diproses' },
       completed: { bg: 'bg-emerald-100', text: 'text-emerald-800', label: 'Selesai' },
-      cancelled: { bg: 'bg-slate-100', text: 'text-slate-400', label: 'Dibatalkan' }
+      cancelled: { bg: 'bg-slate-100', text: 'text-slate-400', label: 'Dibatalkan' },
+      failed: { bg: 'bg-red-50', text: 'text-red-500', label: 'Gagal / Kadaluarsa' }
     };
     return maps[status] || { bg: 'bg-slate-100', text: 'text-slate-600', label: status };
   };
@@ -118,16 +121,53 @@ export default function AdminOrderDetailPage() {
   };
 
   const handleDeliver = async () => {
-    if (!finalFile) {
-      setActionSuccess('File final ZIP wajib diisi!');
+    if (!finalFileObj && !finalFile) {
+      setActionSuccess('File final wajib diisi!');
       return;
     }
     setIsSubmitting(true);
-    await deliverOrder(order.id, previewFile || undefined, finalFile);
-    setActionSuccess('Hasil pekerjaan berhasil diunggah dan dikirim ke pelanggan!');
-    setPreviewFile('');
-    setFinalFile('');
-    setIsSubmitting(false);
+    try {
+      const { supabase } = await import('@/lib/supabase/client');
+      
+      let uploadedPreviewUrl = previewFile;
+      let uploadedFinalUrl = finalFile;
+      
+      if (previewFileObj) {
+        const fileExt = previewFileObj.name.split('.').pop();
+        const fileName = `${Date.now()}_preview_${order.id}.${fileExt}`;
+        const { error } = await supabase.storage.from('order-files').upload(fileName, previewFileObj);
+        if (!error) {
+          const { data } = supabase.storage.from('order-files').getPublicUrl(fileName);
+          uploadedPreviewUrl = data.publicUrl;
+        } else {
+          console.error('Preview upload error:', error);
+        }
+      }
+      
+      if (finalFileObj) {
+        const fileExt = finalFileObj.name.split('.').pop();
+        const fileName = `${Date.now()}_final_${order.id}.${fileExt}`;
+        const { error } = await supabase.storage.from('order-files').upload(fileName, finalFileObj);
+        if (!error) {
+          const { data } = supabase.storage.from('order-files').getPublicUrl(fileName);
+          uploadedFinalUrl = data.publicUrl;
+        } else {
+          console.error('Final upload error:', error);
+        }
+      }
+
+      await deliverOrder(order.id, uploadedPreviewUrl || undefined, uploadedFinalUrl);
+      setActionSuccess('Hasil pekerjaan berhasil diunggah dan dikirim ke pelanggan!');
+      setPreviewFile('');
+      setFinalFile('');
+      setPreviewFileObj(null);
+      setFinalFileObj(null);
+    } catch (error) {
+      console.error(error);
+      setActionSuccess('Gagal mengirim file.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -435,24 +475,38 @@ export default function AdminOrderDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Preview File URL (Watermark / PDF)</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Upload Preview File (Watermark / PDF)</label>
                   <input 
-                    type="text" 
-                    placeholder="Contoh: /storage/preview.pdf"
-                    value={previewFile}
-                    onChange={e => setPreviewFile(e.target.value)}
+                    type="file" 
+                    onChange={e => setPreviewFileObj(e.target.files?.[0] || null)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
                   />
+                  {!previewFileObj && (
+                    <input 
+                      type="text" 
+                      placeholder="Atau masukkan URL..."
+                      value={previewFile}
+                      onChange={e => setPreviewFile(e.target.value)}
+                      className="w-full mt-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
+                    />
+                  )}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Final File ZIP URL (Wajib)</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Upload Final File (ZIP/Asli) - Wajib</label>
                   <input 
-                    type="text" 
-                    placeholder="Contoh: /storage/final_project.zip"
-                    value={finalFile}
-                    onChange={e => setFinalFile(e.target.value)}
+                    type="file" 
+                    onChange={e => setFinalFileObj(e.target.files?.[0] || null)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
                   />
+                  {!finalFileObj && (
+                    <input 
+                      type="text" 
+                      placeholder="Atau masukkan URL..."
+                      value={finalFile}
+                      onChange={e => setFinalFile(e.target.value)}
+                      className="w-full mt-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
+                    />
+                  )}
                 </div>
               </div>
 

@@ -45,7 +45,8 @@ export default function AdminOverviewPage() {
       delivered: { label: 'Delivered', cls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
       revision_requested: { label: 'Revisi Masuk', cls: 'bg-teal-50 text-teal-600 border-teal-100' },
       revision_in_progress: { label: 'Revisi Diproses', cls: 'bg-sky-50 text-sky-600 border-sky-100' },
-      completed: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-800' }
+      completed: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-800' },
+      failed: { label: 'Batal / Kadaluarsa', cls: 'bg-red-50 text-red-600 border-red-100' }
     };
 
     const item = statusMap[status] || { label: status, cls: 'bg-slate-100 text-slate-600' };

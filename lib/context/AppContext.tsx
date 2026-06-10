@@ -87,12 +87,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
 
       const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-      if (ords) setOrders(ords as any);
+      const { data: pmts } = await supabase.from('payments').select('*');
+      
+      if (ords) {
+        const now = new Date();
+        let ordersUpdated = false;
+        
+        // Auto-fail logic: unpaid for 30 mins
+        for (const o of ords) {
+          if (o.status === 'approved' || o.status === 'waiting_payment') {
+            const lastUpdated = new Date(o.updated_at).getTime();
+            const diffMins = (now.getTime() - lastUpdated) / (1000 * 60);
+            
+            if (diffMins > 30) {
+              await supabase.from('orders').update({ status: 'failed', updated_at: now.toISOString() }).eq('id', o.id);
+              o.status = 'failed';
+              ordersUpdated = true;
+              
+              if (pmts) {
+                const pmt = pmts.find((p: any) => p.order_id === o.id && p.status === 'unpaid');
+                if (pmt) {
+                  await supabase.from('payments').update({ status: 'expired' }).eq('id', pmt.id);
+                  pmt.status = 'expired';
+                }
+              }
+            }
+          }
+        }
+        
+        setOrders(ords as any);
+      }
 
       const { data: fls } = await supabase.from('order_files').select('*');
       if (fls) setFiles(fls as any);
 
-      const { data: pmts } = await supabase.from('payments').select('*');
       if (pmts) setPayments(pmts as any);
 
       const { data: revs } = await supabase.from('revisions').select('*');

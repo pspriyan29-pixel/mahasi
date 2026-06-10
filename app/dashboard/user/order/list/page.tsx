@@ -42,6 +42,7 @@ export default function UserOrderListPage() {
       revision_in_progress: { label: 'Revisi Diproses', cls: 'bg-sky-50 text-sky-600 border-sky-100' },
       completed: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
       cancelled: { label: 'Dibatalkan', cls: 'bg-slate-100 text-slate-400 border-slate-200' },
+      failed: { label: 'Batal / Kadaluarsa', cls: 'bg-red-50 text-red-600 border-red-100' },
     };
 
     const item = statusMap[status] || { label: status, cls: 'bg-slate-100 text-slate-600' };

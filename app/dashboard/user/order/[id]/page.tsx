@@ -163,7 +163,8 @@ export default function UserOrderDetailPage() {
       revision_requested: { bg: 'bg-teal-50', text: 'text-teal-600', label: 'Revisi Diminta' },
       revision_in_progress: { bg: 'bg-sky-50', text: 'text-sky-600', label: 'Revisi Sedang Diproses' },
       completed: { bg: 'bg-emerald-100', text: 'text-emerald-800', label: 'Selesai' },
-      cancelled: { bg: 'bg-slate-100', text: 'text-slate-400', label: 'Dibatalkan' }
+      cancelled: { bg: 'bg-slate-100', text: 'text-slate-400', label: 'Dibatalkan' },
+      failed: { bg: 'bg-red-50', text: 'text-red-500', label: 'Gagal / Kadaluarsa' }
     };
     return maps[status] || { bg: 'bg-slate-100', text: 'text-slate-600', label: status };
   };

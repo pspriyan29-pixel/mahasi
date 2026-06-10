@@ -22,6 +22,8 @@ export default function AdminQueueKanbanPage() {
   // Delivery inputs
   const [previewFile, setPreviewFile] = useState('');
   const [finalFile, setFinalFile] = useState('');
+  const [previewFileObj, setPreviewFileObj] = useState<File | null>(null);
+  const [finalFileObj, setFinalFileObj] = useState<File | null>(null);
 
   const activeWorkload = orders.filter(x => x.status === 'in_progress').length;
   const maxActive = parseInt(settings.max_active_orders || '1');
@@ -49,8 +51,8 @@ export default function AdminQueueKanbanPage() {
       color: 'bg-blue-500/10 border-blue-200 text-blue-700'
     },
     {
-      title: 'Selesai / Delivered',
-      statusGroup: ['delivered', 'completed', 'rejected', 'cancelled'],
+      title: 'Selesai / Delivered / Batal',
+      statusGroup: ['delivered', 'completed', 'rejected', 'cancelled', 'failed'],
       color: 'bg-emerald-500/10 border-emerald-200 text-emerald-700'
     }
   ];
@@ -97,16 +99,48 @@ export default function AdminQueueKanbanPage() {
     alert('Progress berhasil diperbarui.');
   };
 
-  const handleDeliver = (id: string) => {
-    if (!finalFile) {
-      alert('Mohon tentukan nama file final untuk dikirim!');
+  const handleDeliver = async (id: string) => {
+    if (!finalFileObj && !finalFile) {
+      alert('Mohon tentukan atau upload file final untuk dikirim!');
       return;
     }
-    deliverOrder(id, previewFile || undefined, finalFile);
-    setSelectedOrder(null);
-    setPreviewFile('');
-    setFinalFile('');
-    alert('Hasil pekerjaan berhasil dikirim ke dashboard pelanggan.');
+    
+    let uploadedPreviewUrl = previewFile;
+    let uploadedFinalUrl = finalFile;
+    
+    try {
+      const { supabase } = await import('@/lib/supabase/client');
+      
+      if (previewFileObj) {
+        const fileExt = previewFileObj.name.split('.').pop();
+        const fileName = `${Date.now()}_preview_${id}.${fileExt}`;
+        const { error } = await supabase.storage.from('order-files').upload(fileName, previewFileObj);
+        if (!error) {
+          const { data } = supabase.storage.from('order-files').getPublicUrl(fileName);
+          uploadedPreviewUrl = data.publicUrl;
+        }
+      }
+      
+      if (finalFileObj) {
+        const fileExt = finalFileObj.name.split('.').pop();
+        const fileName = `${Date.now()}_final_${id}.${fileExt}`;
+        const { error } = await supabase.storage.from('order-files').upload(fileName, finalFileObj);
+        if (!error) {
+          const { data } = supabase.storage.from('order-files').getPublicUrl(fileName);
+          uploadedFinalUrl = data.publicUrl;
+        }
+      }
+      
+      await deliverOrder(id, uploadedPreviewUrl || undefined, uploadedFinalUrl);
+      setSelectedOrder(null);
+      setPreviewFile('');
+      setFinalFile('');
+      setPreviewFileObj(null);
+      setFinalFileObj(null);
+      alert('Hasil pekerjaan berhasil dikirim ke dashboard pelanggan.');
+    } catch (e) {
+      alert('Terjadi kesalahan saat mengunggah file.');
+    }
   };
 
   return (
@@ -271,19 +305,34 @@ export default function AdminQueueKanbanPage() {
                                 <div>
                                   <label className="block text-[8px] font-bold text-slate-400 uppercase mb-1">File Pengiriman (File Vault)</label>
                                   <input 
-                                    type="text" 
-                                    placeholder="Nama File Preview (opsional)" 
-                                    value={previewFile}
-                                    onChange={e => setPreviewFile(e.target.value)}
+                                    type="file" 
+                                    onChange={e => setPreviewFileObj(e.target.files?.[0] || null)}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold mb-1"
                                   />
+                                  {!previewFileObj && (
+                                    <input 
+                                      type="text" 
+                                      placeholder="URL Preview (opsional)" 
+                                      value={previewFile}
+                                      onChange={e => setPreviewFile(e.target.value)}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold mb-2"
+                                    />
+                                  )}
+                                  
                                   <input 
-                                    type="text" 
-                                    placeholder="Nama File Hasil Final (contoh: final.zip)" 
-                                    value={finalFile}
-                                    onChange={e => setFinalFile(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold"
+                                    type="file" 
+                                    onChange={e => setFinalFileObj(e.target.files?.[0] || null)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold mb-1"
                                   />
+                                  {!finalFileObj && (
+                                    <input 
+                                      type="text" 
+                                      placeholder="URL Final ZIP (opsional)" 
+                                      value={finalFile}
+                                      onChange={e => setFinalFile(e.target.value)}
+                                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-semibold"
+                                    />
+                                  )}
                                 </div>
 
                                 <div className="flex gap-2">
@@ -362,7 +411,7 @@ export default function AdminQueueKanbanPage() {
                               </button>
                             )}
 
-                            {['delivered', 'completed', 'rejected', 'cancelled'].includes(ord.status) && (
+                            {['delivered', 'completed', 'rejected', 'cancelled', 'failed'].includes(ord.status) && (
                               <div className="text-[9px] font-medium text-slate-400 text-center w-full py-1">
                                 Status Selesai / Arsip
                               </div>
