@@ -65,7 +65,8 @@ export default function UserOrderDetailPage() {
   }, [signature]);
 
   const generateQris = async () => {
-    if (!payment) return;
+    const payAmount = payment?.amount || order.final_price;
+    if (!payAmount) return;
     setQrisLoading(true);
     try {
       const response = await fetch('/api/payments/create-qris', {
@@ -73,7 +74,7 @@ export default function UserOrderDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: order.order_code,
-          amount: payment.amount,
+          amount: payment?.amount || order.final_price,
           keterangan: `Pembayaran Project FlashWork ${order.order_code}`
         })
       });
@@ -373,14 +374,14 @@ export default function UserOrderDetailPage() {
         <div className="lg:col-span-5 space-y-8">
           
           {/* Payment & Invoice Card */}
-          {payment && (
+          {(payment || ['approved', 'waiting_payment', 'payment_review'].includes(order.status)) && (
             <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4 animate-fade-in-up delay-200">
               <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
                 <CreditCard className="w-4.5 h-4.5 text-purple-500" />
                 Status Invoice & QRIS
               </h3>
 
-              {payment.status === 'unpaid' && (
+              {(!payment || payment.status === 'unpaid') && (
                 <div className="space-y-4">
                   {/* QRIS dinamis dari KlikQRIS */}
                   {!qrisImage ? (
@@ -429,7 +430,7 @@ export default function UserOrderDetailPage() {
                       <div className="text-center">
                         <span className="text-[10px] text-slate-550 block font-semibold">Total Tagihan (termasuk kode unik):</span>
                         <span className="text-lg font-black text-blue-600 block mt-0.5">
-                          Rp {(totalAmount || payment.amount).toLocaleString('id-ID')}
+                          Rp {(totalAmount || payment?.amount || order.final_price || 0).toLocaleString('id-ID')}
                         </span>
                       </div>
 
@@ -503,7 +504,7 @@ export default function UserOrderDetailPage() {
                 </div>
               )}
 
-              {payment.status === 'pending_verification' && (
+              {payment?.status === 'pending_verification' && (
                 <div className="text-center py-6 space-y-3">
                   <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto shadow-inner">
                     <RefreshCcw className="w-6 h-6 animate-spin" />
@@ -517,7 +518,7 @@ export default function UserOrderDetailPage() {
                 </div>
               )}
 
-              {payment.status === 'paid' && (
+              {payment?.status === 'paid' && (
                 <div className="text-center py-6 space-y-3">
                   <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
                     <CheckCircle className="w-6 h-6" />
@@ -534,7 +535,7 @@ export default function UserOrderDetailPage() {
                 </div>
               )}
 
-              {payment.status === 'rejected' && (
+              {payment?.status === 'rejected' && (
                 <div className="text-center py-6 space-y-3">
                   <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto shadow-inner">
                     <AlertCircle className="w-6 h-6" />
@@ -545,9 +546,10 @@ export default function UserOrderDetailPage() {
                   </div>
                   <button 
                     onClick={() => {
-                      // reset status ke unpaid di context
-                      payment.status = 'unpaid';
-                      router.refresh();
+                      if (payment) {
+                        payment.status = 'unpaid';
+                        router.refresh();
+                      }
                     }}
                     className="text-xs font-bold text-blue-600 hover:underline"
                   >
