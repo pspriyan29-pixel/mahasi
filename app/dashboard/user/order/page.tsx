@@ -6,7 +6,7 @@ import { calculatePrice } from '@/lib/pricing';
 import { useRouter } from 'next/navigation';
 import { 
   Sparkles, ClipboardList, Clock, CheckCircle2, ArrowRight,
-  UploadCloud, FileText, BadgeInfo, AlertCircle
+  UploadCloud, FileText, BadgeInfo, AlertCircle, Loader2
 } from 'lucide-react';
 
 export default function CreateOrderPage() {
@@ -24,9 +24,11 @@ export default function CreateOrderPage() {
   const [isPremiumDesign, setIsPremiumDesign] = useState(false);
   const [needsReferences, setNeedsReferences] = useState(false);
   
-  // File state mockup
+  // File state
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const selectedService = services.find(s => s.slug === serviceSlug) || services[0];
 
@@ -49,12 +51,14 @@ export default function CreateOrderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
 
-    if (!title.trim() || !description.trim() || !deadline || !fileName) {
-      alert('Mohon lengkapi seluruh kolom formulir dan lampirkan file brief!');
+    if (!title.trim() || !description.trim() || !deadline) {
+      setSubmitError('Mohon lengkapi judul, deskripsi, dan deadline terlebih dahulu.');
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const created = await createOrder({
         service_id: selectedService?.id || '',
@@ -67,15 +71,16 @@ export default function CreateOrderPage() {
         final_price: undefined,
         revision_limit: 3
       }, {
-        name: fileName,
-        size: fileSize
+        name: fileName || 'no-file.txt',
+        size: fileSize || 0
       });
 
-      alert(`Pesanan ${created.order_code} berhasil dibuat! WhatsApp redirect terkirim ke Admin.`);
       router.push(`/dashboard/user/order/${created.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Gagal membuat pesanan.');
+      setSubmitError(err.message || 'Gagal membuat pesanan. Pastikan Anda sudah login dan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -236,9 +241,11 @@ export default function CreateOrderPage() {
             )}
           </div>
 
-          {/* File Upload Mockup */}
+          {/* File Brief Pendukung — opsional */}
           <div className="pt-2">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">File Brief Pendukung (.pdf, .docx, .zip)</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+              File Brief Pendukung <span className="text-slate-300 font-normal normal-case">(opsional)</span>
+            </label>
             <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-6 text-center cursor-pointer transition-colors relative">
               <input 
                 type="file"
@@ -262,14 +269,26 @@ export default function CreateOrderPage() {
             </div>
           </div>
 
-          {/* Tombol Submit di bawah kolom kiri form */}
+          {/* Error Message */}
+          {submitError && (
+            <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{submitError}</span>
+            </div>
+          )}
+
+          {/* Tombol Submit */}
           <div className="pt-2">
             <button 
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+              disabled={isSubmitting}
+              className="w-full inline-flex items-center justify-center gap-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Kirim Brief & Buat Order
-              <ArrowRight className="w-4 h-4" />
+              {isSubmitting ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Memproses Pesanan...</>
+              ) : (
+                <>Kirim Brief & Buat Order <ArrowRight className="w-4 h-4" /></>
+              )}
             </button>
           </div>
 
@@ -327,10 +346,14 @@ export default function CreateOrderPage() {
             <div className="pt-6 border-t border-white/20 mt-6 space-y-3">
               <button 
                 type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 text-xs font-bold bg-white text-blue-600 hover:bg-slate-50 py-3.5 rounded-xl shadow-lg transition-all active:scale-98"
+                disabled={isSubmitting}
+                className="w-full inline-flex items-center justify-center gap-2 text-xs font-bold bg-white text-blue-600 hover:bg-slate-50 py-3.5 rounded-xl shadow-lg transition-all active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Kirim brief & Buat Order
-                <ArrowRight className="w-4 h-4" />
+                {isSubmitting ? (
+                  <><Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Memproses...</>
+                ) : (
+                  <>Kirim Brief & Buat Order <ArrowRight className="w-4 h-4" /></>
+                )}
               </button>
               <div className="flex items-center gap-2 text-[9px] opacity-75 justify-center">
                 <BadgeInfo className="w-3.5 h-3.5" />

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, role, logout, switchRole, notifications, markNotificationRead } = useApp();
+  const { user, role, logout, notifications, markNotificationRead, isLoading } = useApp();
   const router = useRouter();
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -39,11 +39,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => document.removeEventListener('click', handleClick);
   }, [showNotifications]);
 
-  // Redirect if guest (in mock mode we simulate session)
-  // Serta proteksi rute RBAC untuk admin dan pelanggan biasa
+  // Proteksi rute — tunggu loading selesai dulu
   useEffect(() => {
+    if (isLoading) return;
     if (!user) {
-      router.push('/');
+      router.push('/login');
       return;
     }
     if (pathname.startsWith('/dashboard/admin') && role !== 'admin') {
@@ -52,16 +52,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (pathname.startsWith('/dashboard/user') && role === 'admin') {
       router.push('/dashboard/admin');
     }
-  }, [user, role, pathname, router]);
+  }, [user, role, pathname, router, isLoading]);
 
-  if (!user) {
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 animate-fade-in">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-lg animate-pulse-glow">
-            F
-          </div>
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent" />
+          <Logo size="md" withText={false} className="justify-center" />
+          <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent" />
+          <span className="text-xs text-slate-400 font-semibold">Memuat sesi Anda...</span>
         </div>
       </div>
     );
@@ -156,17 +155,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {user.full_name}
                 </h6>
                 <span className="text-[10px] text-slate-400 font-medium truncate block">
-                  {user.phone || 'No Phone'}
+                  {user.email || user.phone || 'FlashWork User'}
                 </span>
               </div>
             </div>
             <button
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 router.push('/');
               }}
               className="text-slate-400 hover:text-red-500 shrink-0 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
-              title="Keluar"
+              title="Keluar dari akun"
             >
               <LogOut className="w-4 h-4" />
             </button>

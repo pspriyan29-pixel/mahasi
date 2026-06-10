@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function UserOverviewPage() {
-  const { user, orders, payments, threads } = useApp();
+  const { user, orders, payments, threads, settings } = useApp();
 
   // Filter orders for the logged-in customer
   const userOrders = orders.filter(ord => ord.user_id === user?.id);
@@ -164,14 +164,22 @@ export default function UserOverviewPage() {
             </div>
 
             {userOrders.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-slate-200 rounded-2xl space-y-3">
-                <AlertCircle className="w-8 h-8 text-slate-300 mx-auto animate-bounce" />
-                <p className="text-xs text-slate-500 font-medium">Anda belum pernah membuat pesanan.</p>
+              <div className="text-center py-14 border border-dashed border-slate-200 rounded-2xl space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto">
+                  <ClipboardCheck className="w-7 h-7 text-blue-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-slate-700">Belum ada pesanan</p>
+                  <p className="text-xs text-slate-400 font-medium max-w-xs mx-auto leading-relaxed">
+                    Mulai dengan membuat pesanan pertama Anda. Admin akan mereview brief dan memberi estimasi harga.
+                  </p>
+                </div>
                 <Link 
                   href="/dashboard/user/order"
-                  className="inline-flex text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg"
+                  className="inline-flex items-center gap-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition-all active:scale-[0.98]"
                 >
-                  Buat Order Pertama
+                  <PlusCircle className="w-4 h-4" />
+                  Buat Pesanan Pertama
                 </Link>
               </div>
             ) : (
@@ -242,7 +250,7 @@ export default function UserOverviewPage() {
               Memiliki pertanyaan khusus mengenai brief tugas, penawaran harga, atau butuh bantuan pengerjaan darurat akademik? Hubungi admin utama secara instan.
             </p>
             <a 
-              href="https://wa.me/6281234567890?text=Halo%20Admin%20FlashWork,%20saya%20ingin%2520konsultasi%20mengenai%20project..."
+              href={`https://wa.me/${settings?.admin_whatsapp_number || '6281234567890'}?text=Halo%20Admin%20FlashWork,%20saya%20ingin%20konsultasi%20mengenai%20project...`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md hover:-translate-y-0.5 active:translate-y-0"

@@ -67,15 +67,20 @@ export default function AdminOverviewPage() {
     await updateSetting('mode_sibuk', nextVal.toString());
   };
 
-  // Performansi Bulanan Dummy (Visual Chart HTML/CSS)
-  const monthlyData = [
-    { month: 'Jan', sales: 120000, height: 'h-12' },
-    { month: 'Feb', sales: 240000, height: 'h-24' },
-    { month: 'Mar', sales: 180000, height: 'h-16' },
-    { month: 'Apr', sales: 380000, height: 'h-36' },
-    { month: 'Mei', sales: 450000, height: 'h-40' },
-    { month: 'Jun', sales: totalIncome, height: 'h-32' },
-  ];
+  // Hitung pendapatan per bulan dari payments yang sudah paid (data real)
+  const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const currentYear = new Date().getFullYear();
+  const monthlyData = MONTHS_ID.map((month, idx) => {
+    const sales = payments
+      .filter(p => p.status === 'paid' && p.paid_at)
+      .filter(p => {
+        const d = new Date(p.paid_at!);
+        return d.getFullYear() === currentYear && d.getMonth() === idx;
+      })
+      .reduce((sum, p) => sum + p.amount, 0);
+    return { month, sales };
+  });
+  const maxSales = Math.max(...monthlyData.map(d => d.sales), 1);
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -169,27 +174,34 @@ export default function AdminOverviewPage() {
         <div className="lg:col-span-8 bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4 animate-fade-in-up delay-200">
           <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="w-4.5 h-4.5 text-emerald-500" />
-            Statistik Pendapatan Bulanan (2026)
+            Statistik Pendapatan Bulanan ({currentYear})
           </h3>
           
-          {/* Custom bar chart in CSS */}
-          <div className="flex justify-between items-end h-44 pt-6 border-b border-slate-200 px-4">
-            {monthlyData.map((item, index) => (
-              <div key={index} className="flex flex-col items-center gap-2 group w-1/6">
-                {/* Tooltip value */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[8px] font-bold px-1.5 py-0.5 rounded absolute -translate-y-8 pointer-events-none shadow-md">
-                  Rp {item.sales.toLocaleString('id-ID')}
-                </div>
-                
-                {/* Visual Bar */}
-                <div 
-                  className={`w-7 rounded-t-lg transition-all duration-500 bg-gradient-to-t from-blue-500 to-indigo-500 group-hover:from-indigo-600 group-hover:to-purple-600 shadow-md ${item.height}`} 
-                />
-                
-                <span className="text-[9px] font-bold text-slate-400">{item.month}</span>
-              </div>
-            ))}
-          </div>
+          {totalIncome === 0 ? (
+            <div className="flex flex-col items-center justify-center h-40 border border-dashed border-slate-200 rounded-2xl">
+              <TrendingUp className="w-8 h-8 text-slate-300 mb-2" />
+              <p className="text-xs text-slate-400 font-bold">Belum ada pendapatan yang tercatat</p>
+              <p className="text-[10px] text-slate-300 mt-1">Data akan muncul setelah ada pembayaran lunas</p>
+            </div>
+          ) : (
+            <div className="flex justify-between items-end h-44 pt-6 border-b border-slate-200 px-4">
+              {monthlyData.map((item, index) => {
+                const heightPct = maxSales > 0 ? Math.max((item.sales / maxSales) * 100, item.sales > 0 ? 8 : 0) : 0;
+                return (
+                  <div key={index} className="flex flex-col items-center gap-2 group w-1/12 relative">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[8px] font-bold px-1.5 py-0.5 rounded absolute -translate-y-8 whitespace-nowrap pointer-events-none shadow-md z-10">
+                      Rp {item.sales.toLocaleString('id-ID')}
+                    </div>
+                    <div
+                      className="w-5 rounded-t-lg transition-all duration-500 bg-gradient-to-t from-blue-500 to-indigo-500 group-hover:from-indigo-600 group-hover:to-purple-600 shadow-md"
+                      style={{ height: `${heightPct}%` }}
+                    />
+                    <span className="text-[9px] font-bold text-slate-400">{item.month}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
       </div>
@@ -282,18 +294,16 @@ export default function AdminOverviewPage() {
                         Detail
                       </Link>
                       <button 
-                        onClick={() => {
-                          verifyPayment(ord.id, false);
-                          alert('Bukti pembayaran ditolak!');
+                        onClick={async () => {
+                          await verifyPayment(ord.id, false);
                         }}
                         className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold rounded-lg transition-colors"
                       >
                         Tolak
                       </button>
                       <button 
-                        onClick={() => {
-                          verifyPayment(ord.id, true);
-                          alert('Bukti pembayaran disetujui! Order masuk antrean/pengerjaan.');
+                        onClick={async () => {
+                          await verifyPayment(ord.id, true);
                         }}
                         className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition-colors shadow-sm"
                       >

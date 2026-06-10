@@ -167,6 +167,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await loadRealData();
     } catch (err) {
       console.error('Error fetching user profile:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 

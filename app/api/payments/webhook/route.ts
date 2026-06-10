@@ -94,22 +94,32 @@ export async function POST(request: Request) {
         }
 
         // 6. Buat Notification untuk User & Admin
-        await supabaseAdmin.from('notifications').insert([
+        const notifPayloads: any[] = [
           {
             user_id: order.user_id,
             title: 'Pembayaran Berhasil (KlikQRIS)',
             message: `Pembayaran Rp ${Number(total_amount).toLocaleString('id-ID')} lunas. Status order Anda: ${targetStatus === 'in_progress' ? 'Diproses' : 'Masuk Antrean'}.`,
             type: 'success',
             link_url: `/dashboard/user/order/${order.id}`
-          },
-          {
-            user_id: 'user-id-riyan', // admin
+          }
+        ];
+
+        // Cari admin secara dinamis
+        const { data: admins } = await supabaseAdmin
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin');
+        if (admins && admins.length > 0) {
+          notifPayloads.push({
+            user_id: admins[0].id,
             title: 'Pembayaran Diterima (KlikQRIS)',
             message: `Order ${order_id} berhasil dibayar lunas otomatis via KlikQRIS.`,
             type: 'payment',
             link_url: `/dashboard/admin/order/${order.id}`
-          }
-        ]);
+          });
+        }
+
+        await supabaseAdmin.from('notifications').insert(notifPayloads);
 
         console.log('[WEBHOOK_PROCESSING_SUCCESS]', order_id);
       } else {

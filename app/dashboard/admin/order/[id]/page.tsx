@@ -24,6 +24,8 @@ export default function AdminOrderDetailPage() {
   const [progressInput, setProgressInput] = useState(50);
   const [previewFile, setPreviewFile] = useState('');
   const [finalFile, setFinalFile] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   // Retrieve data
   const order = orders.find(ord => ord.id === id);
@@ -104,24 +106,28 @@ export default function AdminOrderDetailPage() {
     }
     updateOrderProgress(order.id, 10, 'Pekerjaan mulai dikerjakan secara aktif oleh admin.');
     order.status = 'in_progress';
-    alert('Status pesanan berhasil diubah menjadi Diproses (in_progress).');
+    setActionSuccess('Status pesanan berhasil diubah menjadi Diproses (in_progress).');
   };
 
-  const handleUpdateProgress = () => {
-    updateOrderProgress(order.id, progressInput, noteInput);
-    alert('Progress pengerjaan berhasil diperbarui.');
+  const handleUpdateProgress = async () => {
+    setIsSubmitting(true);
+    await updateOrderProgress(order.id, progressInput, noteInput);
+    setActionSuccess('Progress pengerjaan berhasil diperbarui!');
     setNoteInput('');
+    setIsSubmitting(false);
   };
 
-  const handleDeliver = () => {
-    if (!finalFile.trim()) {
-      alert('Mohon tentukan nama/path file final untuk dikirim!');
+  const handleDeliver = async () => {
+    if (!finalFile) {
+      setActionSuccess('File final ZIP wajib diisi!');
       return;
     }
-    deliverOrder(order.id, previewFile || undefined, finalFile);
-    alert('Hasil pekerjaan berhasil diunggah dan dikirim ke pelanggan!');
+    setIsSubmitting(true);
+    await deliverOrder(order.id, previewFile || undefined, finalFile);
+    setActionSuccess('Hasil pekerjaan berhasil diunggah dan dikirim ke pelanggan!');
     setPreviewFile('');
     setFinalFile('');
+    setIsSubmitting(false);
   };
 
   return (
@@ -144,6 +150,16 @@ export default function AdminOrderDetailPage() {
       </div>
 
       {/* Header Info */}
+      {actionSuccess && (
+        <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold animate-fade-in-up">
+          <CheckCircle className="w-5 h-5" />
+          {actionSuccess}
+          <button onClick={() => setActionSuccess(null)} className="ml-auto text-emerald-500 hover:text-emerald-700">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
@@ -217,18 +233,20 @@ export default function AdminOrderDetailPage() {
               </div>
 
               <div className="flex gap-4 pt-2">
-                <button 
-                  onClick={handleReject}
-                  className="flex-1 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl transition-all"
-                >
-                  Tolak Pesanan
-                </button>
-                <button 
-                  onClick={handleApprove}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-500/10"
-                >
-                  Setujui & Terbitkan Tagihan
-                </button>
+                  <button 
+                    onClick={handleReject}
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl transition-all disabled:opacity-50"
+                  >
+                    Tolak / Minta Detail Tambahan
+                  </button>
+                  <button 
+                    onClick={handleApprove}
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+                  >
+                    Setujui & Terbitkan Tagihan Harga
+                  </button>
               </div>
             </div>
           )}
@@ -343,13 +361,16 @@ export default function AdminOrderDetailPage() {
               <button 
                 onClick={async () => {
                   if (confirm('Apakah Anda yakin ingin menyelesaikan pesanan ini secara manual?')) {
+                    setIsSubmitting(true);
                     await completeOrder(order.id);
-                    alert('Pesanan berhasil diselesaikan secara manual!');
+                    setActionSuccess('Pesanan berhasil diselesaikan secara manual!');
+                    setIsSubmitting(false);
                   }
                 }}
-                className="inline-flex items-center gap-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-750 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-[0.98]"
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-750 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-[0.98] disabled:opacity-50"
               >
-                <Check className="w-4 h-4 text-white" /> Selesaikan Pesanan (Manual)
+                <Check className="w-4 h-4 text-white" /> {isSubmitting ? 'Memproses...' : 'Selesaikan Pesanan (Manual)'}
               </button>
             </div>
           )}
@@ -392,7 +413,8 @@ export default function AdminOrderDetailPage() {
 
                 <button 
                   onClick={handleUpdateProgress}
-                  className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition-all"
+                  disabled={isSubmitting}
+                  className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50"
                 >
                   Perbarui Progress Kerja
                 </button>
@@ -436,7 +458,8 @@ export default function AdminOrderDetailPage() {
 
               <button 
                 onClick={handleDeliver}
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                disabled={isSubmitting}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
               >
                 Upload & Kirim ke Dashboard Pelanggan
               </button>
