@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, role, logout, switchRole, notifications, markNotificationRead, isMockMode } = useApp();
+  const { user, role, logout, switchRole, notifications, markNotificationRead } = useApp();
   const router = useRouter();
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);

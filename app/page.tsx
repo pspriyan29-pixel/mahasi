@@ -268,7 +268,7 @@ export default function LandingPage() {
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow-md">FW</div>
                     <div>
                       <h5 className="text-xs font-bold text-slate-800">Order: FW-2026-0001</h5>
-                      <span className="text-[10px] text-slate-400 font-medium">Budi Santoso</span>
+                      <span className="text-[10px] text-slate-400 font-medium">Nama Pelanggan</span>
                     </div>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-[10px] font-bold">

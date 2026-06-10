@@ -21,20 +21,6 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
-  const handleInstantLogin = async (roleType: 'user' | 'admin') => {
-    setIsLoading(true);
-    try {
-      const email = roleType === 'admin' ? 'perdhanariyan@gmail.com' : 'demo@flashwork.com';
-      const success = await login(email, roleType);
-      if (success) {
-        router.push(roleType === 'admin' ? '/dashboard/admin' : '/dashboard/user');
-      }
-    } catch (err) {
-      alert('Gagal melakukan login demo.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

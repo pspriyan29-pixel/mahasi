@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockDb, Profile, Service, Order, OrderFile, Payment, Revision, ForumThread, ForumComment, Notification } from '@/lib/supabase/mockDb';
+import { Profile, Service, Order, OrderFile, Payment, Revision, ForumThread, ForumComment, Notification } from '@/lib/types';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { calculatePrice } from '@/lib/pricing';
 import { getWhatsAppLink } from '@/lib/whatsapp';
@@ -18,7 +18,7 @@ interface AppContextType {
   comments: ForumComment[];
   notifications: Notification[];
   settings: Record<string, string>;
-  isMockMode: boolean;
+  
   isLoading: boolean;
   
   // Auth Actions
@@ -46,6 +46,9 @@ interface AppContextType {
 
   // Notification Actions
   markNotificationRead: (id: string) => void;
+
+  // Setting Actions
+  updateSetting: (key: string, value: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -64,11 +67,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const isMockMode = !isSupabaseConfigured;
+  
 
   // Fetch real user profile from profiles table
   const fetchUserProfile = async (userId: string) => {
-    if (isMockMode) return;
+    
     try {
       const { data: { user: sessionUser } } = await supabase.auth.getUser();
       const isUserAdmin = sessionUser?.email === 'perdhanariyan@gmail.com';
@@ -86,7 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
         setUser(updatedProfile as any);
         setRole(isUserAdmin ? 'admin' : 'user');
-      } else if (sessionUser) {
+      } if (sessionUser) {
         const fallbackProfile: Profile = {
           id: sessionUser.id,
           full_name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'User Baru',
@@ -104,26 +107,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Load Initial Data
   useEffect(() => {
-    if (isMockMode) {
-      // Load from localStorage via helper
-      setServices(mockDb.services);
-      setOrders(mockDb.orders);
-      setFiles(mockDb.files);
-      setPayments(mockDb.payments);
-      setRevisions(mockDb.revisions);
-      setThreads(mockDb.threads);
-      setComments(mockDb.comments);
-      setNotifications(mockDb.notifications);
-      setSettings(mockDb.settings);
-
-      // Check Session
-      const loggedUser = mockDb.currentUser;
-      if (loggedUser) {
-        setUser(loggedUser);
-        setRole(loggedUser.role === 'admin' ? 'admin' : 'user');
-      }
-      setIsLoading(false);
-    } else {
+    
       setServices(DEFAULT_SERVICES_FALLBACK);
       setSettings({
         max_active_orders: '1',
@@ -155,6 +139,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Fetch dynamic tables
       const loadRealData = async () => {
         try {
+          const { data: svcs } = await supabase.from('services').select('*');
+          if (svcs && svcs.length > 0) {
+            setServices(svcs as any);
+          } else {
+            setServices(DEFAULT_SERVICES_FALLBACK);
+          }
+
           const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
           if (ords) setOrders(ords as any);
 
@@ -167,23 +158,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const { data: revs } = await supabase.from('revisions').select('*');
           if (revs) setRevisions(revs as any);
 
-          const { data: thrs } = await supabase.from('forum_threads').select('*').order('created_at', { ascending: false });
-          if (thrs) setThreads(thrs as any);
+          const { data: thrs } = await supabase.from('forum_threads').select('*, profiles(full_name)').order('created_at', { ascending: false });
+          if (thrs) {
+            const mapped = thrs.map((t: any) => ({
+              ...t,
+              user_name: t.profiles?.full_name || 'User'
+            }));
+            setThreads(mapped as any);
+          }
 
-          const { data: cmts } = await supabase.from('forum_comments').select('*');
-          if (cmts) setComments(cmts as any);
+          const { data: cmts } = await supabase.from('forum_comments').select('*, profiles(full_name)');
+          if (cmts) {
+            const mapped = cmts.map((c: any) => ({
+              ...c,
+              user_name: c.profiles?.full_name || 'User'
+            }));
+            setComments(mapped as any);
+          }
 
           const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
           if (ntfs) setNotifications(ntfs as any);
         } catch (e) {
-          console.warn('Real Supabase loading failed, fallback to mock DB.', e);
-          setOrders(mockDb.orders);
-          setFiles(mockDb.files);
-          setPayments(mockDb.payments);
-          setRevisions(mockDb.revisions);
-          setThreads(mockDb.threads);
-          setComments(mockDb.comments);
-          setNotifications(mockDb.notifications);
+          console.error('Real Supabase loading failed', e);
         }
       };
 
@@ -192,123 +188,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return () => {
         subscription.unsubscribe();
       };
-    }
-  }, [isMockMode]);
+    
+  }, []);
 
-  // Sync state to localstorage in mock mode
-  const syncMockDb = (key: 'orders' | 'files' | 'payments' | 'revisions' | 'threads' | 'comments' | 'notifications' | 'profiles', data: any) => {
-    if (!isMockMode) return;
-    if (key === 'orders') {
-      mockDb.orders = data;
-      setOrders(data);
-    } else if (key === 'files') {
-      mockDb.files = data;
-      setFiles(data);
-    } else if (key === 'payments') {
-      mockDb.payments = data;
-      setPayments(data);
-    } else if (key === 'revisions') {
-      mockDb.revisions = data;
-      setRevisions(data);
-    } else if (key === 'threads') {
-      mockDb.threads = data;
-      setThreads(data);
-    } else if (key === 'comments') {
-      mockDb.comments = data;
-      setComments(data);
-    } else if (key === 'notifications') {
-      mockDb.notifications = data;
-      setNotifications(data);
-    }
-  };
+  
+  ;
 
+  
   const login = async (email: string, roleType: 'user' | 'admin'): Promise<boolean> => {
-    const isUserAdmin = (email === 'perdhanariyan@gmail.com' || roleType === 'admin');
-    const selectedId = isUserAdmin ? 'user-id-riyan' : 'user-id-customer';
-    const found = mockDb.profiles.find(x => x.id === selectedId);
-    if (found) {
-      const updatedProfile: Profile = {
-        ...found,
-        email: isUserAdmin ? 'perdhanariyan@gmail.com' : (email || 'demo@flashwork.com'),
-        role: isUserAdmin ? 'admin' : 'user'
-      };
-      setUser(updatedProfile);
-      setRole(updatedProfile.role);
-      mockDb.currentUser = updatedProfile;
-      return true;
-    }
-    return false;
+    return loginWithEmail(email);
   };
 
   const loginWithGoogle = async () => {
-    if (!isMockMode) {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/user` : undefined
-        }
-      });
-      if (error) throw error;
-    } else {
-      // Fallback: login instant as customer
-      await login('customer@demo.com', 'user');
-    }
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+      }
+    });
   };
 
   const loginWithEmail = async (email: string): Promise<boolean> => {
-    if (!isMockMode) {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard/user` : undefined
-        }
-      });
-      if (error) throw error;
-      return true;
-    } else {
-      const roleType = (email === 'perdhanariyan@gmail.com') ? 'admin' : 'user';
-      return await login(email, roleType);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+      }
+    });
+    if (error) {
+      console.error(error);
+      return false;
     }
+    alert('Link login telah dikirim ke email Anda. Silakan cek inbox/spam.');
+    return true;
   };
 
   const register = async (fullName: string, phone: string, email: string): Promise<boolean> => {
-    if (isMockMode) {
-      const newProfile: Profile = {
-        id: 'user-id-' + Math.random().toString(36).substring(2, 9),
-        full_name: fullName,
-        phone: phone,
-        role: 'user',
-        email: email,
-        created_at: new Date().toISOString()
-      };
-      const allProfiles = [...mockDb.profiles, newProfile];
-      mockDb.profiles = allProfiles;
-      setUser(newProfile);
-      setRole('user');
-      mockDb.currentUser = newProfile;
-      return true;
-    }
-    return false;
+    // Kita gunakan magic link untuk registrasi juga
+    return loginWithEmail(email);
   };
 
   const logout = async () => {
-    if (!isMockMode) {
-      await supabase.auth.signOut();
-    }
+    await supabase.auth.signOut();
     setUser(null);
     setRole('guest');
-    mockDb.currentUser = null;
   };
 
   const switchRole = (newRole: 'user' | 'admin') => {
-    if (isMockMode) {
-      const profile = mockDb.profiles.find(x => x.role === newRole);
-      if (profile) {
-        setUser(profile);
-        setRole(newRole);
-        mockDb.currentUser = profile;
-      }
-    }
+    
   };
 
   // Order Actions
@@ -316,413 +243,512 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     orderData: Omit<Order, 'id' | 'order_code' | 'user_id' | 'status' | 'progress' | 'revision_used' | 'created_at' | 'updated_at'>,
     briefFile: { name: string; size: number }
   ): Promise<Order> => {
-    if (isMockMode && user) {
-      const count = orders.length + 1;
-      const orderCode = `FW-2026-${String(count).padStart(4, '0')}`;
+     if (user) {
+      // Supabase Mode
+      // Get orders count to determine order code
+      const { count } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
+      const orderCount = (count || 0) + 1;
+      const orderCode = `FW-2026-${String(orderCount).padStart(4, '0')}`;
+
+      let serviceUuid: string | null = orderData.service_id;
+      // Map mock s1..s4 service IDs to real UUIDs in Supabase by matching slug
+      if (['s1', 's2', 's3', 's4'].includes(serviceUuid)) {
+        const mockSvc = DEFAULT_SERVICES_FALLBACK.find(s => s.id === serviceUuid);
+        if (mockSvc) {
+          const { data: realSvc } = await supabase
+            .from('services')
+            .select('id')
+            .eq('slug', mockSvc.slug)
+            .single();
+          if (realSvc) {
+            serviceUuid = realSvc.id;
+          } else {
+            serviceUuid = null;
+          }
+        } else {
+          serviceUuid = null;
+        }
+      }
+
+      // Insert Order
+      const { data: insertedOrder, error: orderErr } = await supabase
+        .from('orders')
+        .insert({
+          order_code: orderCode,
+          user_id: user.id,
+          service_id: serviceUuid,
+          title: orderData.title,
+          description: orderData.description,
+          deadline: orderData.deadline,
+          difficulty: orderData.difficulty || 'normal',
+          priority: orderData.priority || 'normal',
+          estimated_price: orderData.estimated_price,
+          status: 'pending_review',
+          progress: 0,
+          revision_limit: 3,
+          revision_used: 0
+        })
+        .select()
+        .single();
+      if (orderErr) throw orderErr;
+
+      // Insert File Brief
+      if (briefFile && briefFile.name) {
+        const { error: fileErr } = await supabase
+          .from('order_files')
+          .insert({
+            order_id: insertedOrder.id,
+            uploaded_by: user.id,
+            file_name: briefFile.name,
+            file_url: '#',
+            file_size: briefFile.size,
+            file_type: briefFile.name.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream',
+            file_category: 'user_attachment'
+          });
+        if (fileErr) console.error('Error inserting file in Supabase:', fileErr);
+      }
+
+      // Notify Admin
+      const { data: admins } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin');
+      if (admins && admins.length > 0) {
+        const adminId = admins[0].id;
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: adminId,
+            title: 'Pesanan Baru Masuk',
+            message: `Order ${orderCode} dari ${user.full_name} menunggu review Anda.`,
+            type: 'order',
+            link_url: `/dashboard/admin/order/${insertedOrder.id}`
+          });
+      }
+
+      // Reload state from database
+      const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (ords) setOrders(ords as any);
       
-      const newOrder: Order = {
-        ...orderData,
-        id: 'ord-' + Math.random().toString(36).substring(2, 9),
-        order_code: orderCode,
-        user_id: user.id,
-        status: 'pending_review',
-        progress: 0,
-        revision_used: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      const { data: fls } = await supabase.from('order_files').select('*');
+      if (fls) setFiles(fls as any);
 
-      const newFile: OrderFile = {
-        id: 'file-' + Math.random().toString(36).substring(2, 9),
-        order_id: newOrder.id,
-        uploaded_by: user.id,
-        file_name: briefFile.name,
-        file_url: '#',
-        file_size: briefFile.size,
-        file_type: briefFile.name.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream',
-        file_category: 'user_attachment',
-        created_at: new Date().toISOString()
-      };
+      const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+      if (ntfs) setNotifications(ntfs as any);
 
-      const updatedOrders = [newOrder, ...orders];
-      const updatedFiles = [newFile, ...files];
-
-      // Tambahkan WhatsApp Log Mock
-      console.log(`[WA_REDIRECT_LINK]: ${getWhatsAppLink(orderCode, user.full_name, 'Layanan', newOrder.deadline, newOrder.estimated_price)}`);
-
-      // Push notification ke admin
-      const adminNotification: Notification = {
-        id: 'notif-' + Math.random().toString(36).substring(2, 9),
-        user_id: 'user-id-riyan', // admin
-        title: 'Pesanan Baru Masuk',
-        message: `Order ${orderCode} dari ${user.full_name} menunggu review Anda.`,
-        type: 'order',
-        is_read: false,
-        link_url: `/dashboard/admin/order/${newOrder.id}`,
-        created_at: new Date().toISOString()
-      };
-
-      syncMockDb('orders', updatedOrders);
-      syncMockDb('files', updatedFiles);
-      syncMockDb('notifications', [adminNotification, ...notifications]);
-
-      return newOrder;
+      return insertedOrder as any;
     }
     throw new Error('Not logged in or Supabase not configured');
   };
 
   const approveOrder = async (orderId: string, finalPrice: number, adminNote?: string) => {
-    if (isMockMode) {
-      const updated = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
+    
+      try {
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .update({
             status: 'approved',
             final_price: finalPrice,
             admin_note: adminNote,
             updated_at: new Date().toISOString()
-          };
-        }
-        return ord;
-      });
+          })
+          .eq('id', orderId);
+        if (orderErr) throw orderErr;
 
-      const order = orders.find(x => x.id === orderId);
-      if (order) {
+        const { data: order, error: fetchErr } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (fetchErr) throw fetchErr;
+
         // Buat Invoice unpaid
-        const newPayment: Payment = {
-          id: 'pay-' + Math.random().toString(36).substring(2, 9),
-          order_id: orderId,
-          amount: finalPrice,
-          method: 'qris_manual',
-          status: 'unpaid',
-          created_at: new Date().toISOString()
-        };
-        syncMockDb('payments', [newPayment, ...payments]);
+        const { error: payErr } = await supabase
+          .from('payments')
+          .insert({
+            order_id: orderId,
+            amount: finalPrice,
+            method: 'qris_manual',
+            status: 'unpaid'
+          });
+        if (payErr) throw payErr;
 
         // Kirim Notif ke User
-        const userNotif: Notification = {
-          id: 'notif-' + Math.random().toString(36).substring(2, 9),
-          user_id: order.user_id,
-          title: 'Pesanan Disetujui',
-          message: `Pesanan ${order.order_code} disetujui dengan harga final Rp ${finalPrice.toLocaleString('id-ID')}. Silakan lakukan pembayaran.`,
-          type: 'payment',
-          is_read: false,
-          link_url: `/dashboard/user/order/${orderId}`,
-          created_at: new Date().toISOString()
-        };
-        syncMockDb('notifications', [userNotif, ...notifications]);
-      }
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: order.user_id,
+            title: 'Pesanan Disetujui',
+            message: `Pesanan ${order.order_code} disetujui dengan harga final Rp ${finalPrice.toLocaleString('id-ID')}. Silakan lakukan pembayaran.`,
+            type: 'payment',
+            link_url: `/dashboard/user/order/${orderId}`
+          });
 
-      syncMockDb('orders', updated);
-    }
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+        const { data: pmts } = await supabase.from('payments').select('*');
+        if (pmts) setPayments(pmts as any);
+        const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+        if (ntfs) setNotifications(ntfs as any);
+      } catch (err) {
+        console.error('Error approving order in Supabase:', err);
+      }
+    
   };
 
   const rejectOrder = async (orderId: string, adminNote: string) => {
-    if (isMockMode) {
-      const updated = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
+    
+      try {
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .update({
             status: 'rejected',
             admin_note: adminNote,
             updated_at: new Date().toISOString()
-          };
-        }
-        return ord;
-      });
+          })
+          .eq('id', orderId);
+        if (orderErr) throw orderErr;
 
-      const order = orders.find(x => x.id === orderId);
-      if (order) {
+        const { data: order, error: fetchErr } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (fetchErr) throw fetchErr;
+
         // Kirim Notif ke User
-        const userNotif: Notification = {
-          id: 'notif-' + Math.random().toString(36).substring(2, 9),
-          user_id: order.user_id,
-          title: 'Pesanan Ditolak',
-          message: `Maaf, pesanan ${order.order_code} ditolak oleh admin dengan alasan: ${adminNote}`,
-          type: 'alert',
-          is_read: false,
-          link_url: `/dashboard/user/order/${orderId}`,
-          created_at: new Date().toISOString()
-        };
-        syncMockDb('notifications', [userNotif, ...notifications]);
-      }
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: order.user_id,
+            title: 'Pesanan Ditolak',
+            message: `Maaf, pesanan ${order.order_code} ditolak oleh admin dengan alasan: ${adminNote}`,
+            type: 'alert',
+            link_url: `/dashboard/user/order/${orderId}`
+          });
 
-      syncMockDb('orders', updated);
-    }
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+        const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+        if (ntfs) setNotifications(ntfs as any);
+      } catch (err) {
+        console.error('Error rejecting order in Supabase:', err);
+      }
+    
   };
 
   const payOrder = async (orderId: string, proofName: string) => {
-    if (isMockMode && user) {
-      const updatedPayments = payments.map(pay => {
-        if (pay.order_id === orderId) {
-          return {
-            ...pay,
-            status: 'pending_verification' as const,
+     if (user) {
+      try {
+        const { error: payErr } = await supabase
+          .from('payments')
+          .update({
+            status: 'pending_verification',
             proof_url: `/uploads/${proofName}`
-          };
-        }
-        return pay;
-      });
+          })
+          .eq('order_id', orderId);
+        if (payErr) throw payErr;
 
-      const updatedOrders = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .update({
             status: 'payment_review',
             updated_at: new Date().toISOString()
-          };
-        }
-        return ord;
-      });
+          })
+          .eq('id', orderId);
+        if (orderErr) throw orderErr;
 
-      const order = orders.find(x => x.id === orderId);
-      if (order) {
+        const { data: order, error: fetchErr } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (fetchErr) throw fetchErr;
+
         // Notif Admin
-        const adminNotif: Notification = {
-          id: 'notif-' + Math.random().toString(36).substring(2, 9),
-          user_id: 'user-id-riyan',
-          title: 'Bukti Pembayaran Diunggah',
-          message: `Pembayaran ${order.order_code} telah diupload bukti transfernya oleh pelanggan.`,
-          type: 'payment',
-          is_read: false,
-          link_url: `/dashboard/admin/order/${orderId}`,
-          created_at: new Date().toISOString()
-        };
-        syncMockDb('notifications', [adminNotif, ...notifications]);
-      }
+        const { data: admins } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin');
+        if (admins && admins.length > 0) {
+          const adminId = admins[0].id;
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: adminId,
+              title: 'Bukti Pembayaran Diunggah',
+              message: `Pembayaran ${order.order_code} telah diupload bukti transfernya oleh pelanggan.`,
+              type: 'payment',
+              link_url: `/dashboard/admin/order/${orderId}`
+            });
+        }
 
-      syncMockDb('payments', updatedPayments);
-      syncMockDb('orders', updatedOrders);
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+        const { data: pmts } = await supabase.from('payments').select('*');
+        if (pmts) setPayments(pmts as any);
+        const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+        if (ntfs) setNotifications(ntfs as any);
+      } catch (err) {
+        console.error('Error paying order in Supabase:', err);
+      }
     }
   };
 
   const verifyPayment = async (orderId: string, isValid: boolean) => {
-    if (isMockMode) {
-      const order = orders.find(x => x.id === orderId);
-      if (!order) return;
+    
+      try {
+        const { data: order, error: fetchErr } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (fetchErr || !order) throw fetchErr || new Error('Order not found');
 
-      const updatedPayments = payments.map(pay => {
-        if (pay.order_id === orderId) {
-          return {
-            ...pay,
-            status: (isValid ? 'paid' : 'rejected') as any,
-            paid_at: isValid ? new Date().toISOString() : undefined
-          };
-        }
-        return pay;
-      });
+        // Update payment status
+        const { error: payErr } = await supabase
+          .from('payments')
+          .update({
+            status: isValid ? 'paid' : 'rejected',
+            paid_at: isValid ? new Date().toISOString() : null
+          })
+          .eq('order_id', orderId);
+        if (payErr) throw payErr;
 
-      // Workload control: periksa jumlah active order
-      const activeCount = orders.filter(x => x.status === 'in_progress').length;
-      const maxActive = parseInt(settings.max_active_orders || '1');
+        // Hitung active orders in progress
+        const { count: activeCount } = await supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'in_progress');
 
-      let targetStatus = 'queued';
-      if (isValid) {
-        if (activeCount < maxActive) {
-          targetStatus = 'in_progress';
+        // Get max_active_orders
+        const { data: maxActiveSetting } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'max_active_orders')
+          .single();
+        const maxActive = parseInt(maxActiveSetting?.value || '1');
+
+        let targetStatus = 'queued';
+        if (isValid) {
+          if ((activeCount || 0) < maxActive) {
+            targetStatus = 'in_progress';
+          } else {
+            targetStatus = 'queued';
+          }
         } else {
-          targetStatus = 'queued';
+          targetStatus = 'waiting_payment';
         }
-      } else {
-        targetStatus = 'waiting_payment';
-      }
 
-      const updatedOrders = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
+        // Update order status
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .update({
             status: targetStatus,
             progress: targetStatus === 'in_progress' ? 10 : 0,
             updated_at: new Date().toISOString()
-          };
-        }
-        return ord;
-      });
+          })
+          .eq('id', orderId);
+        if (orderErr) throw orderErr;
 
-      // Kirim Notif User
-      const userNotif: Notification = {
-        id: 'notif-' + Math.random().toString(36).substring(2, 9),
-        user_id: order.user_id,
-        title: isValid ? 'Pembayaran Berhasil' : 'Pembayaran Ditolak',
-        message: isValid
-          ? `Pembayaran Rp ${order.final_price?.toLocaleString('id-ID')} diverifikasi. Status pesanan Anda: ${targetStatus === 'in_progress' ? 'Diproses' : 'Masuk Antrean'}.`
-          : `Bukti transfer ditolak. Silakan unggah ulang bukti pembayaran yang sah.`,
-        type: isValid ? 'success' : 'alert',
-        is_read: false,
-        link_url: `/dashboard/user/order/${orderId}`,
-        created_at: new Date().toISOString()
-      };
+        // Kirim Notif User
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: order.user_id,
+            title: isValid ? 'Pembayaran Berhasil' : 'Pembayaran Ditolak',
+            message: isValid
+              ? `Pembayaran Rp ${order.final_price?.toLocaleString('id-ID')} diverifikasi. Status pesanan Anda: ${targetStatus === 'in_progress' ? 'Diproses' : 'Masuk Antrean'}.`
+              : `Bukti transfer ditolak. Silakan unggah ulang bukti pembayaran yang sah.`,
+            type: isValid ? 'success' : 'alert',
+            link_url: `/dashboard/user/order/${orderId}`
+          });
 
-      syncMockDb('payments', updatedPayments);
-      syncMockDb('orders', updatedOrders);
-      syncMockDb('notifications', [userNotif, ...notifications]);
-    }
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+        const { data: pmts } = await supabase.from('payments').select('*');
+        if (pmts) setPayments(pmts as any);
+        const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+        if (ntfs) setNotifications(ntfs as any);
+      } catch (err) {
+        console.error('Error verifying payment in Supabase:', err);
+      }
+    
   };
 
   const updateOrderProgress = async (orderId: string, progress: number, adminNote: string) => {
-    if (isMockMode) {
-      const updatedOrders = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
-            progress,
+    
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .update({
+            progress: progress,
             admin_note: adminNote,
             updated_at: new Date().toISOString()
-          };
-        }
-        return ord;
-      });
+          })
+          .eq('id', orderId);
+        if (error) throw error;
 
-      syncMockDb('orders', updatedOrders);
-    }
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+      } catch (err) {
+        console.error('Error updating progress in Supabase:', err);
+      }
+    
   };
 
   const deliverOrder = async (orderId: string, previewUrl?: string, finalUrl?: string) => {
-    if (isMockMode) {
-      const order = orders.find(x => x.id === orderId);
-      if (!order) return;
+    
+      try {
+        const { data: order, error: fetchErr } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (fetchErr || !order) throw fetchErr || new Error('Order not found');
 
-      const updatedOrders = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .update({
             status: 'delivered',
             progress: 100,
             updated_at: new Date().toISOString()
-          };
+          })
+          .eq('id', orderId);
+        if (orderErr) throw orderErr;
+
+        // Tambah file admin_preview & admin_final ke order_files
+        const currentUserId = user?.id || '';
+        if (previewUrl) {
+          await supabase
+            .from('order_files')
+            .insert({
+              order_id: orderId,
+              uploaded_by: currentUserId,
+              file_name: 'hasil_preview_watermark.pdf',
+              file_url: previewUrl,
+              file_size: 245000,
+              file_type: 'application/pdf',
+              file_category: 'admin_preview'
+            });
         }
-        return ord;
-      });
+        if (finalUrl) {
+          await supabase
+            .from('order_files')
+            .insert({
+              order_id: orderId,
+              uploaded_by: currentUserId,
+              file_name: 'hasil_final_lengkap.zip',
+              file_url: finalUrl,
+              file_size: 1045000,
+              file_type: 'application/zip',
+              file_category: 'admin_final'
+            });
+        }
 
-      // Tambah file admin_preview & admin_final
-      const newFiles: OrderFile[] = [];
-      if (previewUrl) {
-        newFiles.push({
-          id: 'file-' + Math.random().toString(36).substring(2, 9),
-          order_id: orderId,
-          uploaded_by: 'user-id-riyan',
-          file_name: 'hasil_preview_watermark.pdf',
-          file_url: previewUrl,
-          file_size: 245000,
-          file_type: 'application/pdf',
-          file_category: 'admin_preview',
-          created_at: new Date().toISOString()
-        });
+        // Notif User
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: order.user_id,
+            title: 'Hasil Pekerjaan Dikirim',
+            message: `Pekerjaan ${order.order_code} telah selesai dan file hasil telah diunggah. Silakan tinjau hasil pekerjaan.`,
+            type: 'delivered',
+            link_url: `/dashboard/user/order/${orderId}`
+          });
+
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+        const { data: fls } = await supabase.from('order_files').select('*');
+        if (fls) setFiles(fls as any);
+        const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+        if (ntfs) setNotifications(ntfs as any);
+      } catch (err) {
+        console.error('Error delivering order in Supabase:', err);
       }
-      if (finalUrl) {
-        newFiles.push({
-          id: 'file-' + Math.random().toString(36).substring(2, 9),
-          order_id: orderId,
-          uploaded_by: 'user-id-riyan',
-          file_name: 'hasil_final_lengkap.zip',
-          file_url: finalUrl,
-          file_size: 1045000,
-          file_type: 'application/zip',
-          file_category: 'admin_final',
-          created_at: new Date().toISOString()
-        });
-      }
-
-      syncMockDb('files', [...newFiles, ...files]);
-      syncMockDb('orders', updatedOrders);
-
-      // Notif User
-      const userNotif: Notification = {
-        id: 'notif-' + Math.random().toString(36).substring(2, 9),
-        user_id: order.user_id,
-        title: 'Hasil Pekerjaan Dikirim',
-        message: `Pekerjaan ${order.order_code} telah selesai dan file hasil telah diunggah. Silakan tinjau hasil pekerjaan.`,
-        type: 'delivered',
-        is_read: false,
-        link_url: `/dashboard/user/order/${orderId}`,
-        created_at: new Date().toISOString()
-      };
-      syncMockDb('notifications', [userNotif, ...notifications]);
-    }
+    
   };
 
   const requestRevision = async (orderId: string, note: string) => {
-    if (isMockMode && user) {
-      const order = orders.find(x => x.id === orderId);
-      if (!order) return;
+     if (user) {
+      try {
+        const { data: order, error: fetchErr } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (fetchErr || !order) throw fetchErr || new Error('Order not found');
 
-      const newRevCount = order.revision_used + 1;
-      if (newRevCount > order.revision_limit) {
-        alert('Kuota revisi Anda telah habis (Maksimal 3x).');
-        return;
-      }
+        const newRevCount = order.revision_used + 1;
+        if (newRevCount > order.revision_limit) {
+          alert('Kuota revisi Anda telah habis (Maksimal 3x).');
+          return;
+        }
 
-      const updatedOrders = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
+        // Update order status
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .update({
             status: 'revision_requested',
             revision_used: newRevCount,
             updated_at: new Date().toISOString()
-          };
+          })
+          .eq('id', orderId);
+        if (orderErr) throw orderErr;
+
+        // Insert revision
+        const { error: revErr } = await supabase
+          .from('revisions')
+          .insert({
+            order_id: orderId,
+            user_id: user.id,
+            revision_number: newRevCount,
+            note: note,
+            status: 'pending'
+          });
+        if (revErr) throw revErr;
+
+        // Notif Admin
+        const { data: admins } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin');
+        if (admins && admins.length > 0) {
+          const adminId = admins[0].id;
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: adminId,
+              title: 'Revisi Baru Diajukan',
+              message: `Pelanggan ${user.full_name} mengajukan revisi #${newRevCount} untuk order ${order.order_code}.`,
+              type: 'revision',
+              link_url: `/dashboard/admin/order/${orderId}`
+            });
         }
-        return ord;
-      });
 
-      const newRevision: Revision = {
-        id: 'rev-' + Math.random().toString(36).substring(2, 9),
-        order_id: orderId,
-        user_id: user.id,
-        revision_number: newRevCount,
-        note,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      };
-
-      // Notif Admin
-      const adminNotif: Notification = {
-        id: 'notif-' + Math.random().toString(36).substring(2, 9),
-        user_id: 'user-id-riyan',
-        title: 'Revisi Baru Diajukan',
-        message: `Pelanggan ${user.full_name} mengajukan revisi #${newRevCount} untuk order ${order.order_code}.`,
-        type: 'revision',
-        is_read: false,
-        link_url: `/dashboard/admin/order/${orderId}`,
-        created_at: new Date().toISOString()
-      };
-
-      syncMockDb('revisions', [newRevision, ...revisions]);
-      syncMockDb('orders', updatedOrders);
-      syncMockDb('notifications', [adminNotif, ...notifications]);
+        // Reload
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+        const { data: revs } = await supabase.from('revisions').select('*');
+        if (revs) setRevisions(revs as any);
+        const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+        if (ntfs) setNotifications(ntfs as any);
+      } catch (err) {
+        console.error('Error requesting revision in Supabase:', err);
+      }
     }
   };
 
   const completeOrder = async (orderId: string) => {
-    if (isMockMode) {
-      const updatedOrders = orders.map(ord => {
-        if (ord.id === orderId) {
-          return {
-            ...ord,
-            status: 'completed',
-            progress: 100,
-            updated_at: new Date().toISOString()
-          };
-        }
-        return ord;
-      });
-
-      const order = orders.find(x => x.id === orderId);
-      if (order && user) {
-        // Kirim Notif Admin
-        const adminNotif: Notification = {
-          id: 'notif-' + Math.random().toString(36).substring(2, 9),
-          user_id: 'user-id-riyan',
-          title: 'Project Selesai',
-          message: `Pelanggan ${user.full_name} telah menyelesaikan order ${order.order_code} dan menyatakan puas.`,
-          type: 'success',
-          is_read: false,
-          link_url: `/dashboard/admin/order/${orderId}`,
-          created_at: new Date().toISOString()
-        };
-        syncMockDb('notifications', [adminNotif, ...notifications]);
-      }
-      syncMockDb('orders', updatedOrders);
-    } else {
+    
       try {
         const { error } = await supabase
           .from('orders')
@@ -735,15 +761,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         const order = orders.find(x => x.id === orderId);
         if (order) {
-          await supabase
-            .from('notifications')
-            .insert({
-              user_id: 'user-id-riyan',
-              title: 'Project Selesai',
-              message: `Order ${order.order_code} diselesaikan oleh pelanggan.`,
-              type: 'success',
-              link_url: `/dashboard/admin/order/${orderId}`
-            });
+          // Notify Admin dynamically
+          const { data: admins } = await supabase.from('profiles').select('id').eq('role', 'admin');
+          const adminId = (admins && admins.length > 0) ? admins[0].id : null;
+          if (adminId) {
+            await supabase
+              .from('notifications')
+              .insert({
+                user_id: adminId,
+                title: 'Project Selesai',
+                message: `Order ${order.order_code} diselesaikan oleh pelanggan.`,
+                type: 'success',
+                link_url: `/dashboard/admin/order/${orderId}`
+              });
+          }
           
           const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
           if (ntfs) setNotifications(ntfs as any);
@@ -751,73 +782,125 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         console.error('Error completing order in Supabase:', err);
       }
-    }
+    
   };
 
   // Forum Actions
   const createThread = async (title: string, content: string, category: string): Promise<ForumThread> => {
-    if (isMockMode && user) {
-      const newThread: ForumThread = {
-        id: 'thread-' + Math.random().toString(36).substring(2, 9),
-        user_id: user.id,
-        title,
-        content,
-        category,
-        status: 'open',
-        is_pinned: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_name: user.full_name,
-        replies_count: 0
-      };
+     if (user) {
+      try {
+        const { data: newThread, error } = await supabase
+          .from('forum_threads')
+          .insert({
+            user_id: user.id,
+            title,
+            content,
+            category,
+            status: 'open',
+            is_pinned: false
+          })
+          .select()
+          .single();
+        if (error) throw error;
 
-      const updatedThreads = [newThread, ...threads];
-      syncMockDb('threads', updatedThreads);
-      return newThread;
+        // Reload
+        const { data: thrs } = await supabase.from('forum_threads').select('*, profiles(full_name)').order('created_at', { ascending: false });
+        if (thrs) {
+          const mapped = thrs.map((t: any) => ({
+            ...t,
+            user_name: t.profiles?.full_name || 'User'
+          }));
+          setThreads(mapped as any);
+        }
+
+        return newThread as any;
+      } catch (err) {
+        console.error('Error creating thread in Supabase:', err);
+        throw err;
+      }
     }
     throw new Error('Not logged in');
   };
 
   const addComment = async (threadId: string, content: string): Promise<ForumComment> => {
-    if (isMockMode && user) {
-      const newComment: ForumComment = {
-        id: 'comment-' + Math.random().toString(36).substring(2, 9),
-        thread_id: threadId,
-        user_id: user.id,
-        content,
-        created_at: new Date().toISOString(),
-        user_name: user.full_name
-      };
+     if (user) {
+      try {
+        const { data: newComment, error } = await supabase
+          .from('forum_comments')
+          .insert({
+            thread_id: threadId,
+            user_id: user.id,
+            content
+          })
+          .select()
+          .single();
+        if (error) throw error;
 
-      const updatedComments = [...comments, newComment];
-      const updatedThreads = threads.map(th => {
-        if (th.id === threadId) {
-          return {
-            ...th,
-            replies_count: (th.replies_count || 0) + 1,
-            updated_at: new Date().toISOString()
-          };
+        // Reload
+        const { data: cmts } = await supabase.from('forum_comments').select('*, profiles(full_name)');
+        if (cmts) {
+          const mapped = cmts.map((c: any) => ({
+            ...c,
+            user_name: c.profiles?.full_name || 'User'
+          }));
+          setComments(mapped as any);
         }
-        return th;
-      });
 
-      syncMockDb('comments', updatedComments);
-      syncMockDb('threads', updatedThreads);
-      return newComment;
+        return newComment as any;
+      } catch (err) {
+        console.error('Error adding comment in Supabase:', err);
+        throw err;
+      }
     }
     throw new Error('Not logged in');
   };
 
-  const markNotificationRead = (id: string) => {
-    if (isMockMode) {
-      const updated = notifications.map(notif => {
-        if (notif.id === id) {
-          return { ...notif, is_read: true };
+  const markNotificationRead = async (id: string) => {
+    
+      try {
+        const { error } = await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('id', id);
+        if (error) throw error;
+
+        const { data } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (data) setNotifications(data as any);
+      } catch (err) {
+        console.error('Error marking notification read in Supabase:', err);
+      }
+    
+  };
+
+  const updateSetting = async (key: string, value: string) => {
+    
+      try {
+        const { error } = await supabase
+          .from('settings')
+          .upsert({ key, value })
+          .eq('key', key);
+        if (error) throw error;
+        
+        // Reload settings
+        const { data: setts } = await supabase.from('settings').select('*');
+        if (setts) {
+          const mappedSettings: Record<string, string> = {
+            max_active_orders: '1',
+            admin_whatsapp_number: '6281234567890',
+            mode_sibuk: 'false'
+          };
+          setts.forEach((s: any) => {
+            mappedSettings[s.key] = s.value;
+          });
+          setSettings(mappedSettings);
         }
-        return notif;
-      });
-      syncMockDb('notifications', updated);
-    }
+      } catch (err) {
+        console.error('Error updating setting in Supabase:', err);
+      }
+    
   };
 
   return (
@@ -834,7 +917,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         comments,
         notifications,
         settings,
-        isMockMode,
+        
         isLoading,
         login,
         loginWithGoogle,
@@ -853,7 +936,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         completeOrder,
         createThread,
         addComment,
-        markNotificationRead
+        markNotificationRead,
+        updateSetting
       }}
     >
       {children}
@@ -869,4 +953,9 @@ export function useApp() {
   return context;
 }
 
-const DEFAULT_SERVICES_FALLBACK: Service[] = mockDb.services;
+const DEFAULT_SERVICES_FALLBACK: Service[] = [
+  { id: 's1', name: 'Laporan & Makalah', slug: 'laporan-makalah', category: 'document', description: 'Bantu struktur, penyusunan, perapian, dan revisi dokumen akademik', base_price: 1000, estimated_time: '1-3 Hari' },
+  { id: 's2', name: 'PPT Presentasi', slug: 'ppt-presentasi', category: 'document', description: 'Buat slide presentasi yang lebih modern', base_price: 20000, estimated_time: '1-2 Hari' },
+  { id: 's3', name: 'Coding & Website', slug: 'coding-website', category: 'tech', description: 'Bantu debugging, CRUD, database, dashboard, UI, deploy', base_price: 50000, estimated_time: '2-7 Hari' },
+  { id: 's4', name: 'Custom Digital Request', slug: 'custom-request', category: 'custom', description: 'Punya kebutuhan khusus?', base_price: 30000, estimated_time: 'Sesuai Brief' }
+];

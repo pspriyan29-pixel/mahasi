@@ -10,11 +10,16 @@ import {
 } from 'lucide-react';
 
 export default function AdminOverviewPage() {
-  const { orders, payments, verifyPayment, settings, isMockMode } = useApp();
+  const { orders, payments, verifyPayment, settings, updateSetting } = useApp();
 
   // Dialog / State settings local
   const [maxActiveOrders, setMaxActiveOrders] = useState(Number(settings.max_active_orders || '1'));
   const [isModeSibuk, setIsModeSibuk] = useState(settings.mode_sibuk === 'true');
+
+  React.useEffect(() => {
+    setMaxActiveOrders(Number(settings.max_active_orders || '1'));
+    setIsModeSibuk(settings.mode_sibuk === 'true');
+  }, [settings]);
 
   // Statistics
   const pendingReviewOrders = orders.filter(ord => ord.status === 'pending_review');
@@ -51,25 +56,15 @@ export default function AdminOverviewPage() {
     );
   };
 
-  const handleUpdateWorkload = (newLimit: number) => {
+  const handleUpdateWorkload = async (newLimit: number) => {
     setMaxActiveOrders(newLimit);
-    if (isMockMode) {
-      const allSettings = { ...settings, max_active_orders: newLimit.toString() };
-      // update di local storage
-      localStorage.setItem('mock_settings', JSON.stringify(allSettings));
-      // update local context
-      settings.max_active_orders = newLimit.toString();
-    }
+    await updateSetting('max_active_orders', newLimit.toString());
   };
 
-  const handleToggleModeSibuk = () => {
+  const handleToggleModeSibuk = async () => {
     const nextVal = !isModeSibuk;
     setIsModeSibuk(nextVal);
-    if (isMockMode) {
-      const allSettings = { ...settings, mode_sibuk: nextVal.toString() };
-      localStorage.setItem('mock_settings', JSON.stringify(allSettings));
-      settings.mode_sibuk = nextVal.toString();
-    }
+    await updateSetting('mode_sibuk', nextVal.toString());
   };
 
   // Performansi Bulanan Dummy (Visual Chart HTML/CSS)
