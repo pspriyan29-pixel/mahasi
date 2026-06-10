@@ -69,9 +69,62 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   
 
+  // Load all user-specific data from Supabase (called after auth)
+  const loadRealData = async () => {
+    try {
+      const { data: svcs } = await supabase.from('services').select('*');
+      if (svcs && svcs.length > 0) {
+        setServices(svcs as any);
+      } else {
+        setServices(DEFAULT_SERVICES_FALLBACK);
+      }
+
+      const { data: setts } = await supabase.from('settings').select('*');
+      if (setts && setts.length > 0) {
+        const mappedSettings: Record<string, string> = {};
+        setts.forEach((s: any) => { mappedSettings[s.key] = s.value; });
+        setSettings(mappedSettings);
+      }
+
+      const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      if (ords) setOrders(ords as any);
+
+      const { data: fls } = await supabase.from('order_files').select('*');
+      if (fls) setFiles(fls as any);
+
+      const { data: pmts } = await supabase.from('payments').select('*');
+      if (pmts) setPayments(pmts as any);
+
+      const { data: revs } = await supabase.from('revisions').select('*');
+      if (revs) setRevisions(revs as any);
+
+      const { data: thrs } = await supabase.from('forum_threads').select('*, profiles(full_name)').order('created_at', { ascending: false });
+      if (thrs) {
+        const mapped = thrs.map((t: any) => ({
+          ...t,
+          user_name: t.profiles?.full_name || 'User'
+        }));
+        setThreads(mapped as any);
+      }
+
+      const { data: cmts } = await supabase.from('forum_comments').select('*, profiles(full_name)');
+      if (cmts) {
+        const mapped = cmts.map((c: any) => ({
+          ...c,
+          user_name: c.profiles?.full_name || 'User'
+        }));
+        setComments(mapped as any);
+      }
+
+      const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+      if (ntfs) setNotifications(ntfs as any);
+    } catch (e) {
+      console.error('Supabase data loading failed', e);
+    }
+  };
+
   // Fetch real user profile from profiles table
   const fetchUserProfile = async (userId: string) => {
-    
     try {
       const { data: { user: sessionUser } } = await supabase.auth.getUser();
       const isUserAdmin = sessionUser?.email === 'perdhanariyan@gmail.com';
@@ -81,25 +134,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .select('*')
         .eq('id', userId)
         .single();
-      
+
       if (profile) {
         const updatedProfile = {
           ...profile,
-          role: isUserAdmin ? 'admin' : 'user'
+          email: sessionUser?.email || '',
+          role: isUserAdmin ? 'admin' : (profile.role || 'user')
         };
         setUser(updatedProfile as any);
-        setRole(isUserAdmin ? 'admin' : 'user');
-      } if (sessionUser) {
+        setRole(isUserAdmin ? 'admin' : (profile.role || 'user'));
+      } else if (sessionUser) {
+        // Profile belum terbuat (misalnya user baru via OTP), buat fallback
         const fallbackProfile: Profile = {
           id: sessionUser.id,
           full_name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'User Baru',
           phone: sessionUser.user_metadata?.phone || '',
           role: isUserAdmin ? 'admin' : 'user',
+          email: sessionUser.email || '',
           created_at: sessionUser.created_at
         };
         setUser(fallbackProfile);
         setRole(fallbackProfile.role);
+        // Buat profile di database jika belum ada
+        await supabase.from('profiles').upsert({
+          id: sessionUser.id,
+          full_name: fallbackProfile.full_name,
+          phone: fallbackProfile.phone,
+          role: fallbackProfile.role
+        });
       }
+      // Setelah user diketahui, muat semua data dengan RLS aktif
+      await loadRealData();
     } catch (err) {
       console.error('Error fetching user profile:', err);
     }
@@ -107,88 +172,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Load Initial Data
   useEffect(() => {
-    
-      setServices(DEFAULT_SERVICES_FALLBACK);
-      setSettings({
-        max_active_orders: '1',
-        admin_whatsapp_number: '6281234567890',
-        mode_sibuk: 'false'
-      });
+    setServices(DEFAULT_SERVICES_FALLBACK);
+    setSettings({
+      max_active_orders: '1',
+      admin_whatsapp_number: '6281234567890',
+      mode_sibuk: 'false'
+    });
 
-      // Load session
-      supabase.auth.getSession().then((res: any) => {
-        const session = res.data?.session;
-        if (session) {
-          fetchUserProfile(session.user.id);
-        } else {
-          setIsLoading(false);
-        }
-      });
+    // Load public data (services, settings, forum) tanpa auth
+    loadRealData();
 
-      // Listen Auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-        if (session) {
-          fetchUserProfile(session.user.id);
-        } else {
-          setUser(null);
-          setRole('guest');
-        }
+    // Load session
+    supabase.auth.getSession().then((res: any) => {
+      const session = res.data?.session;
+      if (session) {
+        fetchUserProfile(session.user.id);
+      } else {
         setIsLoading(false);
-      });
+      }
+    });
 
-      // Fetch dynamic tables
-      const loadRealData = async () => {
-        try {
-          const { data: svcs } = await supabase.from('services').select('*');
-          if (svcs && svcs.length > 0) {
-            setServices(svcs as any);
-          } else {
-            setServices(DEFAULT_SERVICES_FALLBACK);
-          }
+    // Listen Auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      if (session) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUser(null);
+        setRole('guest');
+        setOrders([]);
+        setPayments([]);
+        setFiles([]);
+        setRevisions([]);
+        setNotifications([]);
+        setIsLoading(false);
+      }
+    });
 
-          const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-          if (ords) setOrders(ords as any);
-
-          const { data: fls } = await supabase.from('order_files').select('*');
-          if (fls) setFiles(fls as any);
-
-          const { data: pmts } = await supabase.from('payments').select('*');
-          if (pmts) setPayments(pmts as any);
-
-          const { data: revs } = await supabase.from('revisions').select('*');
-          if (revs) setRevisions(revs as any);
-
-          const { data: thrs } = await supabase.from('forum_threads').select('*, profiles(full_name)').order('created_at', { ascending: false });
-          if (thrs) {
-            const mapped = thrs.map((t: any) => ({
-              ...t,
-              user_name: t.profiles?.full_name || 'User'
-            }));
-            setThreads(mapped as any);
-          }
-
-          const { data: cmts } = await supabase.from('forum_comments').select('*, profiles(full_name)');
-          if (cmts) {
-            const mapped = cmts.map((c: any) => ({
-              ...c,
-              user_name: c.profiles?.full_name || 'User'
-            }));
-            setComments(mapped as any);
-          }
-
-          const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
-          if (ntfs) setNotifications(ntfs as any);
-        } catch (e) {
-          console.error('Real Supabase loading failed', e);
-        }
-      };
-
-      loadRealData();
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   
