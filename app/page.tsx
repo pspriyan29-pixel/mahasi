@@ -225,8 +225,7 @@ export default function LandingPage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Link 
-                  href={user ? (user.role === 'admin' ? '/dashboard/admin' : '/dashboard/user') : '/dashboard/user'}
-                  onClick={() => { if(!user) login('customer@demo.com', 'user'); }}
+                  href={user ? (user.role === 'admin' ? '/dashboard/admin' : '/dashboard/user/order') : '/login'}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all hover:-translate-y-1 active:translate-y-0"
                 >
                   Mulai Order Sekarang
@@ -654,8 +653,7 @@ export default function LandingPage() {
 
                 <div className="pt-6 border-t border-white/20 mt-6 relative">
                   <Link 
-                    href={user ? '/dashboard/user' : '/dashboard/user'}
-                    onClick={() => { if(!user) login('customer@demo.com', 'user'); }}
+                    href={user ? '/dashboard/user/order' : '/login'}
                     className="w-full inline-flex items-center justify-center gap-2 text-xs font-bold bg-white text-blue-600 hover:bg-slate-50 py-3 rounded-xl shadow-md transition-all active:scale-95 hover:-translate-y-0.5"
                   >
                     Pesan Layanan Ini
