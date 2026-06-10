@@ -149,9 +149,18 @@ export default function UserOverviewPage() {
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800">Riwayat Pesanan Anda</h3>
-              <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                {userOrders.length} Order
-              </span>
+              <div className="flex items-center gap-3">
+                <Link 
+                  href="/dashboard/user/order" 
+                  className="inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-md transition-all active:scale-[0.98]"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  Buat Order Baru
+                </Link>
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-2 rounded-full">
+                  {userOrders.length} Order
+                </span>
+              </div>
             </div>
 
             {userOrders.length === 0 ? (

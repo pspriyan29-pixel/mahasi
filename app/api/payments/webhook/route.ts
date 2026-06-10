@@ -6,6 +6,15 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 export async function POST(request: Request) {
   try {
+    // Sistem Keamanan Webhook: Validasi x-api-key di Request Headers
+    const apiKeyHeader = request.headers.get('x-api-key');
+    const expectedApiKey = process.env.KLIKQRIS_API_KEY || 'QDHKVXNSOHPdJbKWACwFieYWXsHH8Vmhdr2SKQXP';
+
+    if (apiKeyHeader !== expectedApiKey) {
+      console.warn('[WEBHOOK_UNAUTHORIZED] Invalid API Key received in headers:', apiKeyHeader);
+      return NextResponse.json({ status: false, message: 'Unauthorized: Invalid API Key' }, { status: 401 });
+    }
+
     const payload = await request.json();
     console.log('[KLIKQRIS_WEBHOOK_RECEIVED]', payload);
 

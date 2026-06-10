@@ -15,7 +15,7 @@ export default function AdminOrderDetailPage() {
   const router = useRouter();
   const { 
     orders, payments, files, revisions, services, settings,
-    approveOrder, rejectOrder, verifyPayment, updateOrderProgress, deliverOrder
+    approveOrder, rejectOrder, verifyPayment, updateOrderProgress, deliverOrder, completeOrder
   } = useApp();
 
   // Dialog / Form states
@@ -326,6 +326,30 @@ export default function AdminOrderDetailPage() {
                 className="inline-flex items-center gap-2 py-2 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
               >
                 <Play className="w-4 h-4 fill-white" /> Paksa Mulai Kerja Sekarang
+              </button>
+            </div>
+          )}
+
+          {/* Manual Completion for Admin (If user forgets to click complete) */}
+          {order.status === 'delivered' && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 space-y-4 animate-scale-in">
+              <h3 className="text-sm font-bold text-emerald-800 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                Pekerjaan Hasil Akhir Telah Dikirim
+              </h3>
+              <p className="text-xs text-emerald-700 leading-normal font-medium">
+                Pekerjaan project telah terkirim. Jika pelanggan menyetujui atau lupa menekan tombol selesai di dasbor mereka, Anda dapat menandai pesanan ini selesai secara manual untuk menutup project.
+              </p>
+              <button 
+                onClick={async () => {
+                  if (confirm('Apakah Anda yakin ingin menyelesaikan pesanan ini secara manual?')) {
+                    await completeOrder(order.id);
+                    alert('Pesanan berhasil diselesaikan secara manual!');
+                  }
+                }}
+                className="inline-flex items-center gap-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-750 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-[0.98]"
+              >
+                <Check className="w-4 h-4 text-white" /> Selesaikan Pesanan (Manual)
               </button>
             </div>
           )}

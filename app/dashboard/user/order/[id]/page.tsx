@@ -13,7 +13,7 @@ export default function UserOrderDetailPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const { 
-    orders, payments, files, revisions, payOrder, requestRevision, user, services, verifyPayment
+    orders, payments, files, revisions, payOrder, requestRevision, user, services, verifyPayment, completeOrder
   } = useApp();
 
   const [paymentFile, setPaymentFile] = useState('');
@@ -556,6 +556,30 @@ export default function UserOrderDetailPage() {
                 </div>
               )}
 
+            </div>
+          )}
+
+          {/* Action: Selesaikan Project */}
+          {order.status === 'delivered' && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 shadow-sm space-y-4 animate-scale-in">
+              <h3 className="text-sm font-bold text-emerald-800 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                Pekerjaan Selesai & Siap Ditinjau
+              </h3>
+              <p className="text-xs text-emerald-700 leading-normal font-medium">
+                Pekerjaan Anda telah selesai dikerjakan oleh tim kami. Jika Anda sudah memeriksa file hasil dan merasa puas dengan hasilnya, silakan klik tombol selesai di bawah ini untuk menutup order.
+              </p>
+              <button
+                onClick={async () => {
+                  if (confirm('Apakah Anda puas dengan pekerjaan kami dan ingin menyelesaikan pesanan ini?')) {
+                    await completeOrder(order.id);
+                    alert('Terima kasih! Pesanan berhasil diselesaikan. Kami senang bisa membantu Anda.');
+                  }
+                }}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/10 transition-all active:scale-[0.98]"
+              >
+                Tandai Selesai & Tutup Order
+              </button>
             </div>
           )}
 

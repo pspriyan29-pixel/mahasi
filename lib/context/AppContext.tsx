@@ -38,6 +38,7 @@ interface AppContextType {
   updateOrderProgress: (orderId: string, progress: number, adminNote: string) => Promise<void>;
   deliverOrder: (orderId: string, previewUrl?: string, finalUrl?: string) => Promise<void>;
   requestRevision: (orderId: string, note: string) => Promise<void>;
+  completeOrder: (orderId: string) => Promise<void>;
 
   // Forum Actions
   createThread: (title: string, content: string, category: string) => Promise<ForumThread>;
@@ -691,6 +692,68 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const completeOrder = async (orderId: string) => {
+    if (isMockMode) {
+      const updatedOrders = orders.map(ord => {
+        if (ord.id === orderId) {
+          return {
+            ...ord,
+            status: 'completed',
+            progress: 100,
+            updated_at: new Date().toISOString()
+          };
+        }
+        return ord;
+      });
+
+      const order = orders.find(x => x.id === orderId);
+      if (order && user) {
+        // Kirim Notif Admin
+        const adminNotif: Notification = {
+          id: 'notif-' + Math.random().toString(36).substring(2, 9),
+          user_id: 'user-id-riyan',
+          title: 'Project Selesai',
+          message: `Pelanggan ${user.full_name} telah menyelesaikan order ${order.order_code} dan menyatakan puas.`,
+          type: 'success',
+          is_read: false,
+          link_url: `/dashboard/admin/order/${orderId}`,
+          created_at: new Date().toISOString()
+        };
+        syncMockDb('notifications', [adminNotif, ...notifications]);
+      }
+      syncMockDb('orders', updatedOrders);
+    } else {
+      try {
+        const { error } = await supabase
+          .from('orders')
+          .update({ status: 'completed', progress: 100, updated_at: new Date().toISOString() })
+          .eq('id', orderId);
+        if (error) throw error;
+
+        const { data: ords } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (ords) setOrders(ords as any);
+
+        const order = orders.find(x => x.id === orderId);
+        if (order) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: 'user-id-riyan',
+              title: 'Project Selesai',
+              message: `Order ${order.order_code} diselesaikan oleh pelanggan.`,
+              type: 'success',
+              link_url: `/dashboard/admin/order/${orderId}`
+            });
+          
+          const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
+          if (ntfs) setNotifications(ntfs as any);
+        }
+      } catch (err) {
+        console.error('Error completing order in Supabase:', err);
+      }
+    }
+  };
+
   // Forum Actions
   const createThread = async (title: string, content: string, category: string): Promise<ForumThread> => {
     if (isMockMode && user) {
@@ -787,6 +850,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateOrderProgress,
         deliverOrder,
         requestRevision,
+        completeOrder,
         createThread,
         addComment,
         markNotificationRead
