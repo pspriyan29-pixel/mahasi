@@ -183,23 +183,29 @@ alter table public.reviews enable row level security;
 -- 13. Kebijakan Row Level Security (RLS) - Contoh Dasar
 
 -- Profiles RLS
+drop policy if exists "Allow public read on profiles" on public.profiles;
 create policy "Allow public read on profiles" on public.profiles
   for select using (true);
 
+drop policy if exists "Allow users to update own profile" on public.profiles;
 create policy "Allow users to update own profile" on public.profiles
   for update using (auth.uid() = id);
 
 -- Services RLS (Siapapun bisa melihat, hanya admin yang bisa edit)
+drop policy if exists "Allow public read on services" on public.services;
 create policy "Allow public read on services" on public.services
   for select using (true);
 
 -- Orders RLS (User hanya melihat miliknya, Admin melihat semua)
+drop policy if exists "Allow users to see own orders" on public.orders;
 create policy "Allow users to see own orders" on public.orders
   for select using (auth.uid() = user_id);
 
+drop policy if exists "Allow users to create orders" on public.orders;
 create policy "Allow users to create orders" on public.orders
   for insert with check (auth.uid() = user_id);
 
+drop policy if exists "Allow users to update own draft/pending orders" on public.orders;
 create policy "Allow users to update own draft/pending orders" on public.orders
   for update using (auth.uid() = user_id);
 
@@ -218,10 +224,12 @@ end;
 $$ language plpgsql security definer;
 
 -- Tambah kebijakan admin untuk orders
+drop policy if exists "Allow admin full control on orders" on public.orders;
 create policy "Allow admin full control on orders" on public.orders
   using (public.is_admin()) with check (public.is_admin());
 
 -- Tambah kebijakan admin untuk services
+drop policy if exists "Allow admin full control on services" on public.services;
 create policy "Allow admin full control on services" on public.services
   using (public.is_admin()) with check (public.is_admin());
 
@@ -235,12 +243,15 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists tr_profiles_updated_at on public.profiles;
 create trigger tr_profiles_updated_at before update on public.profiles
   for each row execute function public.handle_updated_at();
 
+drop trigger if exists tr_orders_updated_at on public.orders;
 create trigger tr_orders_updated_at before update on public.orders
   for each row execute function public.handle_updated_at();
 
+drop trigger if exists tr_forum_threads_updated_at on public.forum_threads;
 create trigger tr_forum_threads_updated_at before update on public.forum_threads
   for each row execute function public.handle_updated_at();
 
@@ -272,6 +283,7 @@ begin
 end;
 $$ language plpgsql security definer;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
