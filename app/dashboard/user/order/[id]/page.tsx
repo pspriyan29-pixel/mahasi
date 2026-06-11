@@ -289,9 +289,14 @@ export default function UserOrderDetailPage() {
                         <span className="text-[9px] text-slate-400">File Brief Pelanggan</span>
                       </div>
                     </div>
-                    <button className="p-2 text-slate-500 hover:text-blue-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors">
+                    <a 
+                      href={file.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-slate-500 hover:text-blue-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors inline-block"
+                    >
                       <Download className="w-4 h-4" />
-                    </button>
+                    </a>
                   </div>
                 ))}
               </div>
@@ -351,7 +356,7 @@ export default function UserOrderDetailPage() {
                               alert('Pembayaran belum dikonfirmasi lunas.');
                               return;
                             }
-                            alert(`Mengunduh berkas: ${file.file_name}`);
+                            window.open(file.file_url, '_blank');
                           }}
                           className={`p-2 rounded-lg transition-colors ${
                             isLocked 

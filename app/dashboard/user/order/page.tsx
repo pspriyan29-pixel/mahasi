@@ -27,6 +27,7 @@ export default function CreateOrderPage() {
   // File state
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState(0);
+  const [fileObj, setFileObj] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -46,6 +47,7 @@ export default function CreateOrderPage() {
       const file = e.target.files[0];
       setFileName(file.name);
       setFileSize(file.size);
+      setFileObj(file);
     }
   };
 
@@ -70,10 +72,7 @@ export default function CreateOrderPage() {
         estimated_price: pricingResult.totalPrice,
         final_price: undefined,
         revision_limit: 3
-      }, {
-        name: fileName || 'no-file.txt',
-        size: fileSize || 0
-      });
+      }, fileObj);
 
       router.push(`/dashboard/user/order/${created.id}`);
     } catch (err: any) {

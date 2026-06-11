@@ -30,7 +30,7 @@ interface AppContextType {
   switchRole: (newRole: 'user' | 'admin') => void;
 
   // Order Actions
-  createOrder: (order: Omit<Order, 'id' | 'order_code' | 'user_id' | 'status' | 'progress' | 'revision_used' | 'created_at' | 'updated_at'>, briefFile: { name: string; size: number }) => Promise<Order>;
+  createOrder: (order: Omit<Order, 'id' | 'order_code' | 'user_id' | 'status' | 'progress' | 'revision_used' | 'created_at' | 'updated_at'>, briefFile: File | null) => Promise<Order>;
   approveOrder: (orderId: string, finalPrice: number, adminNote?: string) => Promise<void>;
   rejectOrder: (orderId: string, adminNote: string) => Promise<void>;
   payOrder: (orderId: string, proofName: string) => Promise<void>;
@@ -238,8 +238,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Setup Realtime Subscription
+    const channel = supabase.channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => { loadRealData(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_files' }, () => { loadRealData(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => { loadRealData(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => { loadRealData(); })
+      .subscribe();
+
     return () => {
       subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -293,7 +302,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Order Actions
   const createOrder = async (
     orderData: Omit<Order, 'id' | 'order_code' | 'user_id' | 'status' | 'progress' | 'revision_used' | 'created_at' | 'updated_at'>,
-    briefFile: { name: string; size: number }
+    briefFile: File | null
   ): Promise<Order> => {
      if (user) {
       // Supabase Mode
@@ -348,15 +357,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       // Insert File Brief
       if (briefFile && briefFile.name) {
+        let uploadedUrl = '#';
+        const fileExt = briefFile.name.split('.').pop();
+        const fileName = `${Date.now()}_brief_${insertedOrder.id}.${fileExt}`;
+        const { error: uploadErr } = await supabase.storage.from('order-files').upload(fileName, briefFile);
+        
+        if (!uploadErr) {
+          const { data } = supabase.storage.from('order-files').getPublicUrl(fileName);
+          uploadedUrl = data.publicUrl;
+        } else {
+          console.error('User brief upload error:', uploadErr);
+        }
+
         const { error: fileErr } = await supabase
           .from('order_files')
           .insert({
             order_id: insertedOrder.id,
             uploaded_by: user.id,
             file_name: briefFile.name,
-            file_url: '#',
+            file_url: uploadedUrl,
             file_size: briefFile.size,
-            file_type: briefFile.name.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream',
+            file_type: briefFile.type || (briefFile.name.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream'),
             file_category: 'user_attachment'
           });
         if (fileErr) console.error('Error inserting file in Supabase:', fileErr);
