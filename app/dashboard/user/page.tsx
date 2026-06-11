@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '@/lib/context/AppContext';
 import Link from 'next/link';
 import { 
@@ -11,6 +11,7 @@ import {
 
 export default function UserOverviewPage() {
   const { user, orders, payments, threads, settings } = useApp();
+  const [activeTab, setActiveTab] = useState<'aktif' | 'history' | 'trash'>('aktif');
 
   // Filter orders for the logged-in customer
   const userOrders = orders.filter(ord => ord.user_id === user?.id);
@@ -20,6 +21,11 @@ export default function UserOverviewPage() {
   );
   
   const completedOrders = userOrders.filter(ord => ord.status === 'completed');
+  const trashOrders = userOrders.filter(ord => ['failed', 'cancelled', 'rejected'].includes(ord.status));
+
+  const displayOrders = activeTab === 'aktif' ? activeOrders 
+    : activeTab === 'history' ? completedOrders 
+    : trashOrders;
 
   // Cari satu pesanan aktif yang paling mendekati deadline
   const priorityActiveOrder = activeOrders.length > 0 
@@ -148,7 +154,7 @@ export default function UserOverviewPage() {
 
           {/* List order user */}
           <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <h3 className="text-sm font-bold text-slate-800">Riwayat Pesanan Anda</h3>
               <div className="flex items-center gap-3">
                 <Link 
@@ -164,7 +170,29 @@ export default function UserOverviewPage() {
               </div>
             </div>
 
-            {userOrders.length === 0 ? (
+            {/* Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2 overflow-x-auto hide-scrollbar">
+              <button 
+                onClick={() => setActiveTab('aktif')}
+                className={`px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === 'aktif' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+              >
+                Sedang Aktif ({activeOrders.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('history')}
+                className={`px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === 'history' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+              >
+                Selesai / History ({completedOrders.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('trash')}
+                className={`px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === 'trash' ? 'border-red-600 text-red-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+              >
+                Gagal / Trash ({trashOrders.length})
+              </button>
+            </div>
+
+            {displayOrders.length === 0 ? (
               <div className="text-center py-14 border border-dashed border-slate-200 rounded-2xl space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto">
                   <ClipboardCheck className="w-7 h-7 text-blue-400" />
@@ -185,7 +213,7 @@ export default function UserOverviewPage() {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {userOrders.map((ord) => (
+                {displayOrders.map((ord) => (
                   <div key={ord.id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1.5 min-w-0">
                       <div className="flex items-center gap-3">

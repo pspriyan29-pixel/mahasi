@@ -306,12 +306,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   ): Promise<Order> => {
      if (user) {
       // Supabase Mode
-      // Get orders count to determine order code
-      const { count } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true });
-      const orderCount = (count || 0) + 1;
-      const orderCode = `FW-2026-${String(orderCount).padStart(4, '0')}`;
+      // Generate unique order code using timestamp + random suffix (prevents duplicate key constraint violations)
+      const now = new Date();
+      const yy = now.getFullYear();
+      const ts = Date.now().toString(36).toUpperCase().slice(-4);
+      const rnd = Math.random().toString(36).toUpperCase().slice(2, 6);
+      const orderCode = `FW-${yy}-${ts}${rnd}`;
 
       let serviceUuid: string | null = orderData.service_id;
       // Map mock s1..s4 service IDs to real UUIDs in Supabase by matching slug

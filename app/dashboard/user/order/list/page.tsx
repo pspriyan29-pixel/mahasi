@@ -10,7 +10,7 @@ import {
 
 export default function UserOrderListPage() {
   const { user, orders, payments } = useApp();
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'trash'>('all');
   const [search, setSearch] = useState('');
 
   const userOrders = orders.filter(ord => ord.user_id === user?.id);
@@ -18,9 +18,11 @@ export default function UserOrderListPage() {
   const filteredOrders = userOrders.filter(ord => {
     // Kategori filter status
     const isActive = ['pending_review', 'need_detail', 'approved', 'waiting_payment', 'payment_review', 'queued', 'in_progress', 'delivered', 'revision_requested', 'revision_in_progress'].includes(ord.status);
+    const isTrash = ['failed', 'cancelled', 'rejected'].includes(ord.status);
     
     if (filter === 'active' && !isActive) return false;
     if (filter === 'completed' && ord.status !== 'completed') return false;
+    if (filter === 'trash' && !isTrash) return false;
 
     // Search query
     return ord.title.toLowerCase().includes(search.toLowerCase()) || ord.order_code.toLowerCase().includes(search.toLowerCase());
@@ -91,7 +93,8 @@ export default function UserOrderListPage() {
           {[
             { id: 'all', label: 'Semua' },
             { id: 'active', label: 'Aktif' },
-            { id: 'completed', label: 'Selesai' }
+            { id: 'completed', label: 'Selesai' },
+            { id: 'trash', label: 'Gagal / Trash' }
           ].map(btn => (
             <button
               key={btn.id}

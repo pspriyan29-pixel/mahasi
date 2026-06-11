@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '@/lib/context/AppContext';
 import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { 
   Sparkles, Calendar, ArrowRight, ShieldCheck, Download, 
   HelpCircle, AlertCircle, FileText, CheckCircle, RefreshCcw,
@@ -48,11 +49,11 @@ export default function UserOrderDetailPage() {
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!paymentFile) {
-      alert('Mohon pilih file bukti transfer/pembayaran!');
+      toast.error('Mohon pilih file bukti transfer/pembayaran!');
       return;
     }
     payOrder(order.id, paymentFile);
-    alert('Bukti pembayaran berhasil diunggah! Status berubah menjadi Pengecekan Bayar.');
+    toast.success('Bukti pembayaran berhasil diunggah! Status berubah menjadi Pengecekan Bayar.');
   };
 
   // KlikQRIS integrations
@@ -63,6 +64,15 @@ export default function UserOrderDetailPage() {
       document.body.appendChild(script);
     }
   }, [signature]);
+
+  // Auto-generate QRIS if status is waiting_payment
+  React.useEffect(() => {
+    if (order && payment) {
+      if (order.status === 'waiting_payment' && payment.status === 'unpaid' && !qrisImage && !qrisLoading) {
+        generateQris();
+      }
+    }
+  }, [order?.status, payment?.status, qrisImage, qrisLoading]);
 
   const generateQris = async () => {
     const payAmount = payment?.amount || order.final_price;
@@ -83,13 +93,13 @@ export default function UserOrderDetailPage() {
         setQrisImage(data.data.qris_image || data.data.qris_url);
         setTotalAmount(Number(data.data.total_amount));
         setSignature(data.data.signature);
-        alert('QRIS dinamis KlikQRIS berhasil dibuat!');
+        toast.success('QRIS dinamis berhasil disiapkan!');
       } else {
-        alert('Gagal menghasilkan QRIS: ' + data.message);
+        toast.error('Gagal menghasilkan QRIS: ' + data.message);
       }
     } catch (err) {
       console.error(err);
-      alert('Error saat menghubungkan ke gateway pembayaran.');
+      toast.error('Error saat menghubungkan ke gateway pembayaran.');
     } finally {
       setQrisLoading(false);
     }
@@ -102,13 +112,13 @@ export default function UserOrderDetailPage() {
       const data = await response.json();
       if (data.status && (data.data.status === 'SUCCESS' || data.data.status === 'PAID')) {
         await verifyPayment(order.id, true);
-        alert('Pembayaran terdeteksi LUNAS! Status pesanan otomatis diproses.');
+        toast.success('Pembayaran terdeteksi LUNAS! Status pesanan otomatis diproses.');
       } else {
-        alert(`Status pembayaran saat ini: ${data.data?.status || 'PENDING'}`);
+        toast.info(`Status pembayaran saat ini: ${data.data?.status || 'PENDING'}`);
       }
     } catch (err) {
       console.error(err);
-      alert('Gagal memverifikasi status pembayaran.');
+      toast.error('Gagal memverifikasi status pembayaran.');
     } finally {
       setCheckingStatus(false);
     }
@@ -118,13 +128,13 @@ export default function UserOrderDetailPage() {
   const handleRevision = (e: React.FormEvent) => {
     e.preventDefault();
     if (!revisionNote.trim()) {
-      alert('Mohon tulis catatan revisi!');
+      toast.error('Mohon tulis catatan revisi!');
       return;
     }
     requestRevision(order.id, revisionNote);
     setRevisionNote('');
     setShowRevisionForm(false);
-    alert('Revisi berhasil dikirimkan ke Admin!');
+    toast.success('Revisi berhasil dikirimkan ke Admin!');
   };
 
   // Timeline steps
@@ -398,27 +408,14 @@ export default function UserOrderDetailPage() {
                           <QrCode className="w-8 h-8 text-blue-600 animate-pulse" />
                         </div>
                         <span className="text-[10px] text-slate-500 text-center leading-normal">
-                          Gunakan KlikQRIS untuk pembayaran otomatis instant via GoPay, OVO, Dana, LinkAja, ShopeePay, atau Mobile Banking.
+                          {qrisLoading ? 'Sedang menyiapkan QRIS dinamis...' : 'Sistem sedang menyiapkan QRIS untuk pembayaran otomatis instan via GoPay, OVO, Dana, LinkAja, ShopeePay, atau Mobile Banking.'}
                         </span>
-                      </div>
-
-                      <button
-                        onClick={generateQris}
-                        disabled={qrisLoading}
-                        className="w-full inline-flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-750 hover:to-indigo-750 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-[0.98] disabled:opacity-50"
-                      >
-                        {qrisLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin text-white" />
-                            Menghubungkan KlikQRIS...
-                          </>
-                        ) : (
-                          <>
-                            <QrCode className="w-4 h-4" />
-                            Buat Kode QRIS Dinamis
-                          </>
+                        {qrisLoading && (
+                          <div className="mt-4 flex items-center justify-center gap-2 text-xs font-bold text-blue-600">
+                            <Loader2 className="w-4 h-4 animate-spin text-blue-600" /> Memproses...
+                          </div>
                         )}
-                      </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center space-y-4 animate-scale-in">
