@@ -139,3 +139,31 @@ create policy "Allow authenticated to insert forum comments" on public.forum_com
 drop policy if exists "Allow public read on forum comments" on public.forum_comments;
 create policy "Allow public read on forum comments" on public.forum_comments
   for select using (true);
+
+-- ─── PROFILES: tambah kolom email jika belum ada ──────────────────────────
+alter table public.profiles add column if not exists email text;
+
+-- ─── REVIEWS ────────────────────────────────────────────────────────────────
+-- Semua orang bisa baca ulasan (landing page publik)
+drop policy if exists "Allow public read on reviews" on public.reviews;
+create policy "Allow public read on reviews" on public.reviews
+  for select using (true);
+
+-- User hanya bisa insert ulasan untuk order miliknya yang sudah completed
+drop policy if exists "Allow users to insert own reviews" on public.reviews;
+create policy "Allow users to insert own reviews" on public.reviews
+  for insert with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.orders
+      where orders.id = reviews.order_id
+      and orders.user_id = auth.uid()
+      and orders.status = 'completed'
+    )
+  );
+
+-- Admin bisa hapus ulasan yang tidak pantas
+drop policy if exists "Allow admin full control on reviews" on public.reviews;
+create policy "Allow admin full control on reviews" on public.reviews
+  using (public.is_admin()) with check (public.is_admin());
+

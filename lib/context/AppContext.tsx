@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Profile, Service, Order, OrderFile, Payment, Revision, ForumThread, ForumComment, Notification } from '@/lib/types';
+import { Profile, Service, Order, OrderFile, Payment, Revision, ForumThread, ForumComment, Notification, Review } from '@/lib/types';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { calculatePrice } from '@/lib/pricing';
 import { getWhatsAppLink } from '@/lib/whatsapp';
@@ -49,6 +49,13 @@ interface AppContextType {
 
   // Setting Actions
   updateSetting: (key: string, value: string) => Promise<void>;
+
+  // Review Actions
+  reviews: Review[];
+  submitReview: (orderId: string, rating: number, comment: string) => Promise<void>;
+
+  // Profile Actions
+  updateProfile: (data: { full_name?: string; phone?: string; avatar_url?: string }) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -65,6 +72,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [comments, setComments] = useState<ForumComment[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   
@@ -146,6 +154,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       const { data: ntfs } = await supabase.from('notifications').select('*').order('created_at', { ascending: false });
       if (ntfs) setNotifications(ntfs as any);
+
+      // Load reviews with joined profile name + avatar
+      const { data: rvws } = await supabase
+        .from('reviews')
+        .select('*, profiles(full_name, avatar_url), orders(title, service_id)')
+        .order('created_at', { ascending: false });
+      if (rvws) {
+        const mappedReviews = rvws.map((r: any) => ({
+          ...r,
+          user_name: r.profiles?.full_name || 'Pengguna',
+          user_avatar: r.profiles?.avatar_url || null,
+          order_service: r.orders?.title || null,
+        }));
+        setReviews(mappedReviews as any);
+      }
     } catch (e) {
       console.error('Supabase data loading failed', e);
     }
@@ -978,6 +1001,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
   };
 
+  const submitReview = async (orderId: string, rating: number, comment: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        order_id: orderId,
+        user_id: user.id,
+        rating,
+        comment: comment.trim() || null,
+      });
+      if (error) throw error;
+      // Reload reviews
+      const { data: rvws } = await supabase
+        .from('reviews')
+        .select('*, profiles(full_name, avatar_url), orders(title, service_id)')
+        .order('created_at', { ascending: false });
+      if (rvws) {
+        setReviews(rvws.map((r: any) => ({
+          ...r,
+          user_name: r.profiles?.full_name || 'Pengguna',
+          user_avatar: r.profiles?.avatar_url || null,
+          order_service: r.orders?.title || null,
+        })) as any);
+      }
+    } catch (err) {
+      console.error('Error submitting review:', err);
+      throw err;
+    }
+  };
+
+  const updateProfile = async (data: { full_name?: string; phone?: string; avatar_url?: string }) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ ...data, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+      if (error) throw error;
+      setUser(prev => prev ? { ...prev, ...data } : prev);
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -1012,7 +1079,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         createThread,
         addComment,
         markNotificationRead,
-        updateSetting
+        updateSetting,
+        reviews,
+        submitReview,
+        updateProfile,
       }}
     >
       {children}

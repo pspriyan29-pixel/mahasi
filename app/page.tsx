@@ -33,7 +33,7 @@ function useInView(threshold = 0.15) {
 }
 
 export default function LandingPage() {
-  const { user, role, logout, services, login } = useApp();
+  const { user, role, logout, services, login, reviews } = useApp();
   const router = useRouter();
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -50,6 +50,7 @@ export default function LandingPage() {
   const heroSection = useInView(0.1);
   const problemSection = useInView();
   const servicesSection = useInView();
+  const reviewsSection = useInView();
   const howSection = useInView();
   const estimatorSection = useInView();
   const faqSection = useInView();
@@ -454,6 +455,69 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section ref={reviewsSection.ref} className="py-20 bg-[#F1F5F9]/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className={`max-w-3xl mx-auto text-center space-y-4 mb-12 ${reviewsSection.isInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Apa Kata Pelanggan Kami?</h2>
+            <p className="text-slate-500">
+              Ulasan asli dari pelanggan yang telah menggunakan layanan FlashWork.
+            </p>
+          </div>
+
+          {reviews && reviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reviews.slice(0, 6).map((review, idx) => (
+                <div 
+                  key={idx} 
+                  className={`bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm flex flex-col justify-between card-lift ${
+                    reviewsSection.isInView ? 'animate-fade-in-up' : 'opacity-0'
+                  }`}
+                  style={{ animationDelay: `${(idx + 1) * 100}ms` }}
+                >
+                  <div className="space-y-4">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star} 
+                          className={`w-4 h-4 ${star <= review.rating ? 'fill-amber-400 text-amber-400' : 'fill-slate-100 text-slate-200'}`} 
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm text-slate-700 leading-relaxed font-medium">"{review.comment || 'Layanan yang sangat memuaskan!'}"</p>
+                  </div>
+                  
+                  <div className="pt-6 mt-6 border-t border-slate-100 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
+                      {review.user_avatar ? (
+                        <img src={review.user_avatar} alt={review.user_name} className="w-full h-full object-cover" />
+                      ) : (
+                        review.user_name?.charAt(0).toUpperCase() || 'U'
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900 truncate">
+                        {review.user_name ? `${review.user_name.split(' ')[0]} ${review.user_name.split(' ')[1] ? review.user_name.split(' ')[1].charAt(0) + '.' : ''}` : 'Pengguna'}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-medium truncate capitalize">
+                        {review.order_service || 'Layanan FlashWork'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={`text-center py-12 ${reviewsSection.isInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="w-8 h-8 text-slate-300" />
+              </div>
+              <p className="text-slate-500 font-medium">Belum ada ulasan untuk ditampilkan saat ini.</p>
+            </div>
+          )}
         </div>
       </section>
 

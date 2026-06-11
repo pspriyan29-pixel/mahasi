@@ -71,6 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { label: 'Buat Order', href: '/dashboard/user/order', icon: PlusCircle },
     { label: 'Pesanan Saya', href: '/dashboard/user/order/list', icon: ClipboardList },
     { label: 'Forum Komunitas', href: '/forum', icon: MessageSquare },
+    { label: 'Profil Saya', href: '/dashboard/user/profile', icon: User },
   ];
 
   const adminMenu = [
@@ -147,8 +148,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <div className="flex items-center justify-between gap-2 px-2">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold uppercase shrink-0 text-sm">
-                {user.full_name.substring(0, 2)}
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold uppercase shrink-0 text-sm overflow-hidden">
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  user.full_name.substring(0, 2)
+                )}
               </div>
               <div className="min-w-0">
                 <h6 className="text-xs font-bold text-slate-800 truncate leading-none mb-1">
@@ -262,8 +267,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* User Avatar */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase border border-blue-200">
-              {user.full_name.substring(0, 2)}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase border border-blue-200 overflow-hidden">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+              ) : (
+                user.full_name.substring(0, 2)
+              )}
             </div>
 
           </div>

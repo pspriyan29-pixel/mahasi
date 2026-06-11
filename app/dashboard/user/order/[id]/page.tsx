@@ -7,19 +7,25 @@ import { toast } from 'sonner';
 import { 
   Sparkles, Calendar, ArrowRight, ShieldCheck, Download, 
   HelpCircle, AlertCircle, FileText, CheckCircle, RefreshCcw,
-  QrCode, CreditCard, Upload, Check, ClipboardList, Info, Loader2
+  QrCode, CreditCard, Upload, Check, ClipboardList, Info, Loader2, Star, X
 } from 'lucide-react';
 
 export default function UserOrderDetailPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const { 
-    orders, payments, files, revisions, payOrder, requestRevision, user, services, verifyPayment, completeOrder
+    orders, payments, files, revisions, payOrder, requestRevision, user, services, verifyPayment, completeOrder, submitReview
   } = useApp();
 
   const [paymentFile, setPaymentFile] = useState('');
   const [revisionNote, setRevisionNote] = useState('');
   const [showRevisionForm, setShowRevisionForm] = useState(false);
+
+  // Review states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // KlikQRIS states
   const [qrisImage, setQrisImage] = useState<string | null>(null);
@@ -620,7 +626,8 @@ export default function UserOrderDetailPage() {
                 onClick={async () => {
                   if (confirm('Apakah Anda puas dengan pekerjaan kami dan ingin menyelesaikan pesanan ini?')) {
                     await completeOrder(order.id);
-                    alert('Terima kasih! Pesanan berhasil diselesaikan. Kami senang bisa membantu Anda.');
+                    toast.success('Terima kasih! Pesanan berhasil diselesaikan. Kami senang bisa membantu Anda.');
+                    setShowReviewModal(true);
                   }
                 }}
                 className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/10 transition-all active:scale-[0.98]"
@@ -721,6 +728,82 @@ export default function UserOrderDetailPage() {
         </div>
 
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-scale-in">
+            <button 
+              onClick={() => setShowReviewModal(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="text-center space-y-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <Star className="w-8 h-8 fill-blue-500 text-blue-500" />
+              </div>
+              
+              <div>
+                <h3 className="text-2xl font-black text-slate-800">Yay! Project Selesai 🎉</h3>
+                <p className="text-sm text-slate-500 mt-2">Bagaimana pengalaman Anda bekerja sama dengan tim FlashWork?</p>
+              </div>
+
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setReviewRating(star)}
+                    className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                  >
+                    <Star 
+                      className={`w-10 h-10 transition-colors ${star <= reviewRating ? 'fill-amber-400 text-amber-400' : 'fill-slate-100 text-slate-200'}`} 
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <div>
+                <textarea
+                  rows={3}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Ceritakan pengalaman Anda... (Opsional)"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-shadow"
+                />
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <button
+                  disabled={isSubmittingReview}
+                  onClick={async () => {
+                    setIsSubmittingReview(true);
+                    try {
+                      await submitReview(order.id, reviewRating, reviewComment);
+                      toast.success('Terima kasih atas ulasan Anda! 🌟');
+                      setShowReviewModal(false);
+                    } catch (e) {
+                      toast.error('Gagal mengirim ulasan.');
+                    } finally {
+                      setIsSubmittingReview(false);
+                    }
+                  }}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50"
+                >
+                  {isSubmittingReview ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Kirim Ulasan'}
+                </button>
+                <button
+                  onClick={() => setShowReviewModal(false)}
+                  className="w-full py-3 text-slate-500 hover:text-slate-700 text-sm font-bold transition-colors"
+                >
+                  Lewati
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

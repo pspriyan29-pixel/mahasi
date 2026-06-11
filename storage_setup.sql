@@ -71,3 +71,43 @@ create policy "Allow admin full control on storage"
       where id = auth.uid() and role = 'admin'
     )
   );
+
+-- ─── BUCKET: avatars (foto profil user) ──────────────────────────────────────
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars',
+  'avatars',
+  true,
+  5242880, -- 5 MB
+  array['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+)
+on conflict (id) do update set public = true, file_size_limit = 5242880;
+
+-- User bisa upload avatar sendiri
+drop policy if exists "Allow authenticated avatar uploads" on storage.objects;
+create policy "Allow authenticated avatar uploads"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'avatars');
+
+-- Update avatar (overwrite)
+drop policy if exists "Allow authenticated avatar updates" on storage.objects;
+create policy "Allow authenticated avatar updates"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'avatars' and auth.uid() = owner);
+
+-- Semua orang bisa lihat avatar (public)
+drop policy if exists "Allow public avatar read" on storage.objects;
+create policy "Allow public avatar read"
+  on storage.objects for select
+  to public
+  using (bucket_id = 'avatars');
+
+-- User bisa hapus avatar lama
+drop policy if exists "Allow owner to delete avatar" on storage.objects;
+create policy "Allow owner to delete avatar"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'avatars' and auth.uid() = owner);
+

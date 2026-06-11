@@ -110,3 +110,16 @@ export interface Notification {
   link_url?: string;
   created_at: string;
 }
+
+export interface Review {
+  id: string;
+  order_id: string;
+  user_id: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  // Joined from profiles
+  user_name?: string;
+  user_avatar?: string;
+  order_service?: string;
+}
