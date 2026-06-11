@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useApp } from '@/lib/context/AppContext';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -56,6 +56,43 @@ export default function UserOrderDetailPage() {
     toast.success('Bukti pembayaran berhasil diunggah! Status berubah menjadi Pengecekan Bayar.');
   };
 
+  // Guard to prevent duplicate auto-generate calls
+  const qrisCalledRef = useRef(false);
+
+  const generateQris = useCallback(async () => {
+    const payAmount = payment?.amount || order?.final_price;
+    if (!payAmount || !order) return;
+    setQrisLoading(true);
+    try {
+      const response = await fetch('/api/payments/create-qris', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.order_code,
+          amount: payAmount,
+          keterangan: `Pembayaran Project FlashWork ${order.order_code}`
+        })
+      });
+      const data = await response.json();
+      if (data.status) {
+        setQrisImage(data.data.qris_image || data.data.qris_url);
+        setTotalAmount(Number(data.data.total_amount));
+        setSignature(data.data.signature);
+        toast.success('QRIS siap! Silakan scan untuk membayar.');
+      } else {
+        toast.error('Gagal menghasilkan QRIS: ' + data.message);
+        qrisCalledRef.current = false; // allow retry
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error saat menghubungkan ke gateway pembayaran.');
+      qrisCalledRef.current = false; // allow retry
+    } finally {
+      setQrisLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.order_code, order?.final_price, payment?.amount]);
+
   // KlikQRIS integrations
   React.useEffect(() => {
     if (signature) {
@@ -65,45 +102,19 @@ export default function UserOrderDetailPage() {
     }
   }, [signature]);
 
-  // Auto-generate QRIS if status is waiting_payment
+  // Auto-generate QRIS when order is waiting_payment — runs as soon as data is ready
   React.useEffect(() => {
-    if (order && payment) {
-      if (order.status === 'waiting_payment' && payment.status === 'unpaid' && !qrisImage && !qrisLoading) {
-        generateQris();
-      }
+    if (
+      order?.status === 'waiting_payment' &&
+      !qrisImage &&
+      !qrisCalledRef.current &&
+      (payment?.status === 'unpaid' || order?.final_price)
+    ) {
+      qrisCalledRef.current = true;
+      generateQris();
     }
-  }, [order?.status, payment?.status, qrisImage, qrisLoading]);
+  }, [order?.status, order?.final_price, payment?.status, qrisImage, generateQris]);
 
-  const generateQris = async () => {
-    const payAmount = payment?.amount || order.final_price;
-    if (!payAmount) return;
-    setQrisLoading(true);
-    try {
-      const response = await fetch('/api/payments/create-qris', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: order.order_code,
-          amount: payment?.amount || order.final_price,
-          keterangan: `Pembayaran Project FlashWork ${order.order_code}`
-        })
-      });
-      const data = await response.json();
-      if (data.status) {
-        setQrisImage(data.data.qris_image || data.data.qris_url);
-        setTotalAmount(Number(data.data.total_amount));
-        setSignature(data.data.signature);
-        toast.success('QRIS dinamis berhasil disiapkan!');
-      } else {
-        toast.error('Gagal menghasilkan QRIS: ' + data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error saat menghubungkan ke gateway pembayaran.');
-    } finally {
-      setQrisLoading(false);
-    }
-  };
 
   const handleCheckQrisStatus = async () => {
     setCheckingStatus(true);
