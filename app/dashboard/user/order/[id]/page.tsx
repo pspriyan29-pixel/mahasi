@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useApp } from '@/lib/context/AppContext';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -58,6 +58,8 @@ export default function UserOrderDetailPage() {
 
   // Guard to prevent duplicate auto-generate calls
   const qrisCalledRef = useRef(false);
+  // Hidden button ref for programmatic trigger
+  const hiddenQrisBtnRef = useRef<HTMLButtonElement>(null);
 
   const generateQris = useCallback(async () => {
     const payAmount = payment?.amount || order?.final_price;
@@ -102,19 +104,34 @@ export default function UserOrderDetailPage() {
     }
   }, [signature]);
 
-  // Auto-generate QRIS when order is waiting_payment — runs as soon as data is ready
-  React.useEffect(() => {
-    if (
-      order?.status === 'waiting_payment' &&
+  // Auto-generate QRIS when order is approved OR waiting_payment
+  // NOTE: approveOrder sets status = 'approved' (NOT waiting_payment),
+  //       so we must check BOTH statuses here.
+  useEffect(() => {
+    const shouldGenerate =
+      ['approved', 'waiting_payment'].includes(order?.status ?? '') &&
       !qrisImage &&
       !qrisCalledRef.current &&
-      (payment?.status === 'unpaid' || order?.final_price)
-    ) {
+      (payment?.status === 'unpaid' || order?.final_price);
+
+    if (shouldGenerate) {
       qrisCalledRef.current = true;
       generateQris();
     }
   }, [order?.status, order?.final_price, payment?.status, qrisImage, generateQris]);
 
+  // Fallback: programmatically click the hidden button after 800ms if QRIS still not loaded
+  useEffect(() => {
+    if (!['approved', 'waiting_payment'].includes(order?.status ?? '')) return;
+    if (qrisImage || qrisCalledRef.current) return;
+    const timer = setTimeout(() => {
+      if (!qrisImage && !qrisCalledRef.current) {
+        hiddenQrisBtnRef.current?.click();
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.status]);
 
   const handleCheckQrisStatus = async () => {
     setCheckingStatus(true);
@@ -407,6 +424,20 @@ export default function UserOrderDetailPage() {
                 <CreditCard className="w-4.5 h-4.5 text-purple-500" />
                 Status Invoice & QRIS
               </h3>
+
+              {/* Hidden fallback button — wired to ref, auto-clicked after 800ms if QRIS not loaded */}
+              <button
+                ref={hiddenQrisBtnRef}
+                onClick={() => {
+                  if (!qrisCalledRef.current && !qrisImage) {
+                    qrisCalledRef.current = true;
+                    generateQris();
+                  }
+                }}
+                style={{ display: 'none' }}
+                aria-hidden="true"
+                tabIndex={-1}
+              />
 
               {(!payment || payment.status === 'unpaid') && (
                 <div className="space-y-4">
