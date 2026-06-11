@@ -292,15 +292,54 @@ create trigger on_auth_user_created
 -- 16. Inisialisasi Data Layanan Default
 insert into public.services (name, slug, category, description, base_price, min_price, max_price, estimated_time)
 values 
-('Laporan & Makalah', 'laporan-makalah', 'document', 'Bantu struktur, penyusunan, perapian, dan revisi dokumen akademik agar lebih rapi dan mudah dipahami.', 20000, 20000, 100000, '1-3 Hari'),
-('PPT Presentasi', 'ppt-presentasi', 'document', 'Buat slide presentasi yang lebih modern, ringkas, dan siap dipakai untuk kelas atau seminar.', 20000, 20000, 150000, '1-2 Hari'),
-('Coding & Website', 'coding-website', 'tech', 'Bantu debugging, CRUD, database, dashboard, UI, deploy, dan project custom sesuai kebutuhan.', 50000, 50000, 1000000, '2-7 Hari'),
-('Custom Digital Request', 'custom-request', 'custom', 'Punya kebutuhan khusus? Ceritakan detailnya, admin akan review dan beri estimasi terbaik.', 30000, 30000, null, 'Sesuai Brief')
+('Penyusunan Makalah & Laporan', 'laporan-makalah', 'document', 'Layanan profesional penyusunan dan perapian format makalah, laporan praktikum, serta daftar pustaka.', 20000, 20000, 100000, '1-3 Hari'),
+('Desain Presentasi', 'ppt-presentasi', 'document', 'Pembuatan slide presentasi profesional, modern, dan meyakinkan untuk kebutuhan akademik maupun bisnis.', 20000, 20000, 150000, '1-2 Hari'),
+('Pengembangan Software', 'coding-website', 'tech', 'Layanan IT profesional meliputi debugging, integrasi database, pembuatan web app, dan deploy sistem.', 50000, 50000, 1000000, '2-7 Hari'),
+('Konsultasi & Proyek Khusus', 'custom-request', 'custom', 'Layanan UI/UX Design, konsultasi tugas akhir, penyusunan ERD/Flowchart, dan konsultasi IT lainnya.', 30000, 30000, null, 'Sesuai Brief')
 on conflict (slug) do nothing;
 
 insert into public.settings (key, value)
 values 
 ('max_active_orders', '1'),
-('admin_whatsapp_number', '6281234567890'),
+('admin_whatsapp_number', '6285378963269'),
 ('mode_sibuk', 'false')
 on conflict (key) do nothing;
+
+--------------------------------------------------------------------------------
+-- 17. Tabel Courses (Kursus Online / Offline)
+create table if not exists public.courses (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text unique not null,
+  description text not null,
+  mode text not null check (mode in ('online', 'offline', 'hybrid')),
+  price integer not null default 0,
+  thumbnail_url text,
+  is_active boolean default true,
+  created_at timestamptz default now()
+);
+
+alter table public.courses enable row level security;
+
+-- RLS Courses: Semua orang bisa melihat kursus aktif
+create policy "Public can view active courses"
+  on public.courses for select
+  using (is_active = true);
+
+create policy "Admin can view all courses"
+  on public.courses for select
+  using (
+    exists (
+      select 1 from public.profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+create policy "Admin can manage courses"
+  on public.courses for all
+  using (
+    exists (
+      select 1 from public.profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );

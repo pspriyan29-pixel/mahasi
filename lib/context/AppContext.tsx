@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Profile, Service, Order, OrderFile, Payment, Revision, ForumThread, ForumComment, Notification, Review } from '@/lib/types';
+import { Profile, Service, Course, Order, OrderFile, Payment, Revision, ForumThread, ForumComment, Notification, Review } from '@/lib/types';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { calculatePrice } from '@/lib/pricing';
 import { getWhatsAppLink } from '@/lib/whatsapp';
@@ -10,6 +10,7 @@ interface AppContextType {
   user: Profile | null;
   role: 'guest' | 'user' | 'admin' | 'partner';
   services: Service[];
+  courses: Course[];
   orders: Order[];
   files: OrderFile[];
   payments: Payment[];
@@ -56,6 +57,11 @@ interface AppContextType {
 
   // Profile Actions
   updateProfile: (data: { full_name?: string; phone?: string; avatar_url?: string }) => Promise<void>;
+
+  // Course Actions
+  createCourse: (data: Omit<Course, 'id' | 'created_at'>, thumbnailFile?: File | null) => Promise<Course>;
+  updateCourse: (id: string, data: Partial<Course>, thumbnailFile?: File | null) => Promise<void>;
+  deleteCourse: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -64,6 +70,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [role, setRole] = useState<'guest' | 'user' | 'admin' | 'partner'>('guest');
   const [services, setServices] = useState<Service[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [files, setFiles] = useState<OrderFile[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -85,6 +92,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setServices(svcs as any);
       } else {
         setServices(DEFAULT_SERVICES_FALLBACK);
+      }
+
+      const { data: crs } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
+      if (crs) {
+        setCourses(crs as any);
       }
 
       const { data: setts } = await supabase.from('settings').select('*');
@@ -228,7 +240,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setServices(DEFAULT_SERVICES_FALLBACK);
     setSettings({
       max_active_orders: '1',
-      admin_whatsapp_number: '6281234567890',
+      admin_whatsapp_number: '6285378963269',
       mode_sibuk: 'false'
     });
 
@@ -987,7 +999,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (setts) {
           const mappedSettings: Record<string, string> = {
             max_active_orders: '1',
-            admin_whatsapp_number: '6281234567890',
+            admin_whatsapp_number: '6285378963269',
             mode_sibuk: 'false'
           };
           setts.forEach((s: any) => {
@@ -1045,12 +1057,87 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const createCourse = async (data: Omit<Course, 'id' | 'created_at'>, thumbnailFile?: File | null) => {
+    try {
+      let thumbnailUrl = data.thumbnail_url;
+      if (thumbnailFile) {
+        const ext = thumbnailFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('course-thumbnails')
+          .upload(fileName, thumbnailFile);
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('course-thumbnails')
+          .getPublicUrl(fileName);
+        thumbnailUrl = publicUrl;
+      }
+
+      const { data: newCourse, error } = await supabase
+        .from('courses')
+        .insert({ ...data, thumbnail_url: thumbnailUrl })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      setCourses(prev => [newCourse, ...prev]);
+      return newCourse;
+    } catch (err) {
+      console.error('Error creating course:', err);
+      throw err;
+    }
+  };
+
+  const updateCourse = async (id: string, data: Partial<Course>, thumbnailFile?: File | null) => {
+    try {
+      let thumbnailUrl = data.thumbnail_url;
+      if (thumbnailFile) {
+        const ext = thumbnailFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('course-thumbnails')
+          .upload(fileName, thumbnailFile);
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('course-thumbnails')
+          .getPublicUrl(fileName);
+        thumbnailUrl = publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('courses')
+        .update({ ...data, thumbnail_url: thumbnailUrl })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      setCourses(prev => prev.map(c => c.id === id ? { ...c, ...data, thumbnail_url: thumbnailUrl || c.thumbnail_url } : c));
+    } catch (err) {
+      console.error('Error updating course:', err);
+      throw err;
+    }
+  };
+
+  const deleteCourse = async (id: string) => {
+    try {
+      const { error } = await supabase.from('courses').delete().eq('id', id);
+      if (error) throw error;
+      setCourses(prev => prev.filter(c => c.id !== id));
+    } catch (err) {
+      console.error('Error deleting course:', err);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
         user,
         role,
         services,
+        courses,
         orders,
         files,
         payments,
@@ -1076,6 +1163,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deliverOrder,
         requestRevision,
         completeOrder,
+        createCourse,
+        updateCourse,
+        deleteCourse,
         createThread,
         addComment,
         markNotificationRead,

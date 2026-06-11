@@ -8,7 +8,7 @@ import Logo from '@/components/ui/Logo';
 import { 
   Home, FileText, ClipboardList, MessageSquare, Settings, 
   Bell, LogOut, ChevronDown, User, Sparkles, SwitchCamera, ListOrdered, PlusCircle,
-  Menu, X, ChevronRight
+  Menu, X, ChevronRight, BookOpen
 } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -68,15 +68,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userMenu = [
     { label: 'Overview', href: '/dashboard/user', icon: Home },
-    { label: 'Buat Order', href: '/dashboard/user/order', icon: PlusCircle },
-    { label: 'Pesanan Saya', href: '/dashboard/user/order/list', icon: ClipboardList },
+    { label: 'Ajukan Layanan', href: '/dashboard/user/order', icon: PlusCircle },
+    { label: 'Permintaan Layanan', href: '/dashboard/user/order/list', icon: ClipboardList },
     { label: 'Forum Komunitas', href: '/forum', icon: MessageSquare },
     { label: 'Profil Saya', href: '/dashboard/user/profile', icon: User },
   ];
 
   const adminMenu = [
     { label: 'Overview', href: '/dashboard/admin', icon: Home },
-    { label: 'Antrean Kerja', href: '/dashboard/admin/queue', icon: ListOrdered },
+    { label: 'Antrean Proyek', href: '/dashboard/admin/queue', icon: ListOrdered },
+    { label: 'Kelola Kursus', href: '/dashboard/admin/courses', icon: BookOpen },
     { label: 'Forum Moderasi', href: '/forum', icon: MessageSquare },
   ];
 

@@ -15,17 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FlashWork - Platform Layanan Pendampingan Akademik & Digital",
-  description: "Bantuan laporan, makalah, PPT, coding, debugging, dan project digital mahasiswa cepat, rapi, dan terarah dengan sistem antrean teratur dan pembayaran QRIS instan.",
-  keywords: ["jasa coding", "jasa pembuatan website", "jasa makalah", "jasa laporan", "pendampingan akademik", "flashwork", "bantuan tugas kuliah", "bimbingan skripsi", "jasa ppt presentasi", "mahasi tech"],
+  title: "FlashWork - Solusi Akademik dan Digital Profesional",
+  description: "Platform SaaS kolaboratif untuk layanan pengembangan software, desain presentasi, dan penyusunan laporan. Wujudkan tugas, proyek, dan ide digital Anda dengan cepat, aman, dan terarah.",
+  keywords: ["layanan penyusunan makalah", "layanan pengembangan software", "konsultasi akademik", "pendampingan tugas akhir", "flashwork", "layanan desain presentasi", "solusi digital profesional", "mahasi tech"],
   authors: [{ name: "Riyan Perdhana Putra", url: "https://mahasi.tech" }],
   metadataBase: new URL("https://mahasi.tech"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "FlashWork - Platform Layanan Pendampingan Akademik & Digital",
-    description: "Bantuan laporan, makalah, PPT, coding, debugging, dan project digital mahasiswa cepat, rapi, dan terarah dengan sistem antrean teratur dan pembayaran QRIS instan.",
+    title: "FlashWork - Solusi Akademik dan Digital Profesional",
+    description: "Platform SaaS kolaboratif untuk layanan pengembangan software, desain presentasi, dan penyusunan laporan. Wujudkan tugas, proyek, dan ide digital Anda dengan cepat, aman, dan terarah.",
     url: "https://mahasi.tech",
     siteName: "FlashWork",
     locale: "id_ID",

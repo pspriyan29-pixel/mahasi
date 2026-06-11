@@ -20,6 +20,18 @@ export interface Service {
   estimated_time: string;
 }
 
+export interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  mode: 'online' | 'offline' | 'hybrid';
+  price: number;
+  thumbnail_url?: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface Order {
   id: string;
   order_code: string;

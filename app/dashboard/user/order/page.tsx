@@ -87,8 +87,8 @@ export default function CreateOrderPage() {
     <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Form Pembuatan Pesanan Baru</h2>
-          <p className="text-xs text-slate-400 font-medium">Lengkapi detail brief tugas Anda agar admin dapat meninjau dan menentukan harga final.</p>
+          <h2 className="text-xl font-bold text-slate-800">Ajukan Permintaan Layanan Baru</h2>
+          <p className="text-xs text-slate-400 font-medium">Lengkapi detail brief proyek Anda agar tim kami dapat meninjau dan menentukan harga final.</p>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export default function CreateOrderPage() {
           
           {/* Judul Tugas */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Judul Tugas / Project</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Judul Proyek / Layanan</label>
             <input 
               type="text"
               placeholder="Contoh: Makalah Manajemen Pemasaran Bab 1-3"
@@ -284,9 +284,9 @@ export default function CreateOrderPage() {
               className="w-full inline-flex items-center justify-center gap-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 py-3.5 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Memproses Pesanan...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Memproses Permintaan...</>
               ) : (
-                <>Kirim Brief & Buat Order <ArrowRight className="w-4 h-4" /></>
+                <>Ajukan Permintaan Layanan <ArrowRight className="w-4 h-4" /></>
               )}
             </button>
           </div>

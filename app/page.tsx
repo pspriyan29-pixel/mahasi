@@ -10,7 +10,7 @@ import {
   Sparkles, BookOpen, Presentation, Code, Cpu, CheckCircle, 
   ArrowRight, ShieldCheck, HelpCircle, FileText, ChevronDown, 
   MessageSquare, User, LogOut, Check, ChevronRight, Menu, X,
-  Zap, Clock, Star, ExternalLink
+  Zap, Clock, Star, ExternalLink, Video, Users
 } from 'lucide-react';
 
 // ─── Intersection Observer Hook ───
@@ -33,7 +33,7 @@ function useInView(threshold = 0.15) {
 }
 
 export default function LandingPage() {
-  const { user, role, logout, services, login, reviews } = useApp();
+  const { user, role, logout, services, courses, settings, login, reviews } = useApp();
   const router = useRouter();
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -208,20 +208,17 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             <div className={`lg:col-span-7 space-y-8 text-center lg:text-left ${heroSection.isInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100/80 text-blue-600 text-xs font-semibold tracking-wide shadow-sm">
-                <Sparkles className="w-3.5 h-3.5" />
-                Platform Pendampingan Akademik & Digital Terpercaya
-              </div>
+
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.1]">
-                Bantuan Akademik & Coding <br />
+                Solusi Akademik & Digital <br />
                 <span className="text-gradient">
-                  Cepat, Rapi, & Terarah
+                  Cepat, Aman, & Terarah
                 </span>
               </h1>
               
               <p className="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Atur kebutuhan tugas, perapian makalah, desain presentasi, hingga coding website dalam satu dashboard interaktif. Dilengkapi pelacakan status real-time, kuota revisi, dan file vault aman.
+                Platform SaaS kolaboratif untuk layanan pengembangan software, penyusunan laporan, dan desain presentasi. Wujudkan tugas, proyek, dan ide digital Anda dengan pelacakan status real-time, kuota revisi, dan file vault aman.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
@@ -229,7 +226,7 @@ export default function LandingPage() {
                   href={user ? (user.role === 'admin' ? '/dashboard/admin' : '/dashboard/user/order') : '/login'}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/25 hover:shadow-blue-500/35 transition-all hover:-translate-y-1 active:translate-y-0"
                 >
-                  Mulai Order Sekarang
+                  Ajukan Layanan
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <a 
@@ -382,7 +379,7 @@ export default function LandingPage() {
           <div className={`max-w-3xl mx-auto text-center space-y-4 mb-16 ${servicesSection.isInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Kategori Layanan Kami</h2>
             <p className="text-slate-500">
-              Pilih pendampingan yang sesuai dengan kebutuhan akademik dan digital Anda.
+              Pilih layanan profesional yang sesuai dengan kebutuhan akademik dan digital Anda.
             </p>
           </div>
 
@@ -390,32 +387,32 @@ export default function LandingPage() {
             {[
               {
                 icon: <BookOpen className="w-6 h-6 text-blue-600" />,
-                title: "Laporan & Makalah",
-                desc: "Pendampingan penyusunan, perapian makalah, laporan praktikum, margin, daftar pustaka.",
+                title: "Penyusunan Makalah & Laporan",
+                desc: "Layanan profesional penyusunan dan perapian format makalah, laporan praktikum, serta daftar pustaka.",
                 price: "Rp20k - Rp100k",
                 slug: "laporan-makalah",
                 gradient: "from-blue-500/10 to-indigo-500/5"
               },
               {
                 icon: <Presentation className="w-6 h-6 text-purple-600" />,
-                title: "PPT Presentasi",
-                desc: "Pembuatan slide presentasi modern, rapi, dan meyakinkan untuk tugas kelas atau seminar.",
+                title: "Desain Presentasi",
+                desc: "Pembuatan slide presentasi profesional, modern, dan meyakinkan untuk kebutuhan akademik maupun bisnis.",
                 price: "Rp20k - Rp150k",
                 slug: "ppt-presentasi",
                 gradient: "from-purple-500/10 to-pink-500/5"
               },
               {
                 icon: <Code className="w-6 h-6 text-indigo-600" />,
-                title: "Coding & Website",
-                desc: "Debugging error, integrasi database, pembuatan web dashboard, deploy, project custom.",
+                title: "Pengembangan Software",
+                desc: "Layanan IT profesional meliputi debugging, integrasi database, pembuatan web app, dan deploy sistem.",
                 price: "Rp50k - Rp1jt+",
                 slug: "coding-website",
                 gradient: "from-indigo-500/10 to-blue-500/5"
               },
               {
                 icon: <Cpu className="w-6 h-6 text-emerald-600" />,
-                title: "Custom Digital Request",
-                desc: "Desain UI/UX Figma, penyusunan flowchart ERD, prompt engineering AI, revisi dokumen teknis.",
+                title: "Konsultasi & Proyek Khusus",
+                desc: "Layanan UI/UX Design, konsultasi tugas akhir, penyusunan ERD/Flowchart, dan konsultasi IT lainnya.",
                 price: "Custom",
                 slug: "custom-request",
                 gradient: "from-emerald-500/10 to-teal-500/5"
@@ -457,6 +454,72 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Courses Section */}
+      {courses && courses.filter(c => c.is_active).length > 0 && (
+        <section className="py-20 bg-white border-t border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center space-y-4 mb-16 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100/80 text-emerald-600 text-xs font-semibold tracking-wide shadow-sm">
+                <Sparkles className="w-3.5 h-3.5" />
+                Program Baru
+              </div>
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Katalog Kursus Profesional</h2>
+              <p className="text-slate-500">
+                Tingkatkan skill Anda melalui program kursus online dan offline interaktif bersama para ahli kami.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {courses.filter(c => c.is_active).map((course, idx) => (
+                <div 
+                  key={course.id} 
+                  className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col group hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 animate-fade-in-up"
+                  style={{ animationDelay: `${(idx + 1) * 150}ms` }}
+                >
+                  <div className="h-48 bg-slate-100 relative w-full overflow-hidden border-b border-slate-100">
+                    {course.thumbnail_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={course.thumbnail_url} alt={course.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full text-slate-300">
+                        <BookOpen className="w-16 h-16" />
+                      </div>
+                    )}
+                    <div className="absolute top-4 right-4">
+                      <div className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider backdrop-blur-md bg-white/95 shadow-sm flex items-center gap-1.5
+                        ${course.mode === 'online' ? 'text-blue-600' : course.mode === 'offline' ? 'text-emerald-600' : 'text-purple-600'}`}>
+                        {course.mode === 'online' ? <Video className="w-3 h-3" /> : course.mode === 'offline' ? <Users className="w-3 h-3" /> : <BookOpen className="w-3 h-3" />}
+                        {course.mode}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6 md:p-8 flex-1 flex flex-col">
+                    <h3 className="text-lg font-bold text-slate-900 leading-tight mb-3 group-hover:text-blue-600 transition-colors">{course.title}</h3>
+                    <p className="text-sm text-slate-500 line-clamp-3 mb-6 flex-1 leading-relaxed">{course.description}</p>
+                    
+                    <div className="pt-6 mt-auto border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Biaya Investasi</p>
+                        <p className="font-black text-slate-800 text-lg">Rp {course.price.toLocaleString('id-ID')}</p>
+                      </div>
+                      <a 
+                        href={`https://wa.me/${settings?.admin_whatsapp_number || '6285378963269'}?text=${encodeURIComponent(`Halo admin, saya tertarik mendaftar program kursus *${course.title}*. Mohon informasi detailnya.`)}`}
+                        target="_blank" rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/25 hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        Daftar
+                        <ArrowRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Reviews Section */}
       <section ref={reviewsSection.ref} className="py-20 bg-[#F1F5F9]/30">
@@ -525,16 +588,16 @@ export default function LandingPage() {
       <section ref={howSection.ref} id="how-it-works" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`max-w-3xl mx-auto text-center space-y-4 mb-16 ${howSection.isInView ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Bagaimana Alur Pemesanan Bekerja?</h2>
-            <p className="text-slate-500">Transparan dari pengisian brief hingga serah terima hasil final.</p>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Bagaimana Alur Layanan Bekerja?</h2>
+            <p className="text-slate-500">Transparan dari pengajuan layanan hingga serah terima hasil akhir.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
             {[
-              { t: "Isi Brief & Detail", d: "Pilih kategori layanan, upload file soal/panduan, isi deadline, dan lihat estimasi.", icon: <FileText className="w-5 h-5" /> },
-              { t: "Review & Harga Final", d: "Admin memverifikasi brief Anda dan menentukan harga final yang adil.", icon: <CheckCircle className="w-5 h-5" /> },
-              { t: "Pembayaran & Antrean", d: "Lakukan pembayaran QRIS, upload bukti. Pesanan Anda mulai diproses admin.", icon: <Zap className="w-5 h-5" /> },
-              { t: "File Delivery & Revisi", d: "Unduh file dari dashboard. Jika ada kekurangan, ajukan revisi maksimal 3x.", icon: <Star className="w-5 h-5" /> }
+              { t: "Isi Brief & Detail", d: "Pilih kategori layanan, upload panduan proyek, atur tenggat waktu, dan lihat estimasi.", icon: <FileText className="w-5 h-5" /> },
+              { t: "Review & Harga Final", d: "Tim kami memverifikasi kebutuhan Anda dan menentukan harga final yang profesional.", icon: <CheckCircle className="w-5 h-5" /> },
+              { t: "Pembayaran & Antrean", d: "Lakukan pembayaran, upload bukti. Proyek Anda mulai dikerjakan oleh tim ahli.", icon: <Zap className="w-5 h-5" /> },
+              { t: "Penyerahan & Revisi", d: "Unduh hasil dari dashboard. Jika diperlukan, ajukan revisi untuk penyempurnaan.", icon: <Star className="w-5 h-5" /> }
             ].map((step, idx) => (
               <div 
                 key={idx} 
@@ -559,10 +622,10 @@ export default function LandingPage() {
             
             <div className="lg:col-span-5 space-y-6">
               <h2 className="text-3xl font-black text-slate-900 leading-tight">
-                Hitung Estimasi Biaya Pesanan Anda
+                Hitung Estimasi Biaya Layanan
               </h2>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Gunakan kalkulator interaktif ini untuk memperkirakan biaya pekerjaan Anda secara instan. Hasil estimasi didasarkan pada kategori, deadline, kuantitas, tingkat kesulitan, dan fitur tambahan.
+                Gunakan kalkulator interaktif ini untuk memperkirakan biaya proyek Anda secara instan. Hasil estimasi didasarkan pada kategori, tenggat waktu, kuantitas, tingkat kesulitan, dan fitur tambahan.
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-xs text-slate-600 font-medium">
@@ -591,10 +654,10 @@ export default function LandingPage() {
                     onChange={e => setEstService(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   >
-                    <option value="laporan-makalah">Laporan & Makalah</option>
-                    <option value="ppt-presentasi">PPT Presentasi</option>
-                    <option value="coding-website">Coding & Website</option>
-                    <option value="custom-request">Custom Digital Request</option>
+                    <option value="laporan-makalah">Penyusunan Makalah & Laporan</option>
+                    <option value="ppt-presentasi">Desain Presentasi</option>
+                    <option value="coding-website">Pengembangan Software</option>
+                    <option value="custom-request">Konsultasi & Proyek Khusus</option>
                   </select>
                 </div>
 

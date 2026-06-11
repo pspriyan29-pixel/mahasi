@@ -17,12 +17,12 @@ Status: Menunggu Review Admin
 
 Cek dashboard admin untuk approve/tolak.`;
   
-  return `https://wa.me/6281234567890?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/6285378963269?text=${encodeURIComponent(text)}`;
 }
 
 export async function sendWhatsAppNotification(message: string): Promise<{ success: boolean; mock?: boolean; error?: any; result?: any }> {
   const apiKey = process.env.WHATSAPP_API_KEY;
-  const target = process.env.WHATSAPP_TARGET_NUMBER || '6281234567890';
+  const target = process.env.WHATSAPP_TARGET_NUMBER || '6285378963269';
 
   if (!apiKey || apiKey === 'your-whatsapp-gateway-key') {
     console.log(`[MOCK_WA_NOTIFICATION] Target: ${target}\nMessage:\n${message}`);

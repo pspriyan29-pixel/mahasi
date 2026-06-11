@@ -61,15 +61,15 @@ export default function UserOrderListPage() {
       {/* Title block */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Daftar Pesanan Saya</h2>
-          <p className="text-xs text-slate-400 font-medium">Lihat seluruh riwayat pesanan bimbingan dan layanan digital Anda di FlashWork.</p>
+          <h2 className="text-xl font-bold text-slate-800">Daftar Permintaan Layanan</h2>
+          <p className="text-xs text-slate-400 font-medium">Lihat seluruh riwayat permintaan layanan akademik dan digital Anda di FlashWork.</p>
         </div>
         <Link 
           href="/dashboard/user/order" 
           className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-blue-500/15 transition-all"
         >
           <PlusCircle className="w-4 h-4" />
-          Pesan Baru
+          Ajukan Baru
         </Link>
       </div>
 
@@ -81,7 +81,7 @@ export default function UserOrderListPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text" 
-            placeholder="Cari kode atau judul pesanan..." 
+            placeholder="Cari kode atau judul layanan..." 
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
